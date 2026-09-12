@@ -437,7 +437,7 @@ MODULES = {
 </script>
 
 <script>
-var GAS_URL=''; // Paste Google Apps Script Web App URL here
+var GAS_URL='https://script.google.com/macros/s/AKfycbyw3j8G2L3-pPiADx8RbKjI78w3Q1uJrknM2ZKw6ACBnkgR0ZhfFX60OZCfCTVv37KVQQ/exec';
 
 function showView(v){currentView=v;}
 function gv(fn,action){var args=[];for(var i=2;i<arguments.length;i++)args.push(arguments[i]);showLoading();fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:action,args:args})}).then(function(r){return r.json();}).then(function(r){hideLoading();fn(r);}).catch(function(e){hideLoading();console.error(e);alert('Error: '+e.message);});}
