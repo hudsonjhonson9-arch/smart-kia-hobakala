@@ -440,7 +440,7 @@ MODULES = {
 var GAS_URL='https://script.google.com/macros/s/AKfycbyw3j8G2L3-pPiADx8RbKjI78w3Q1uJrknM2ZKw6ACBnkgR0ZhfFX60OZCfCTVv37KVQQ/exec';
 
 function showView(v){currentView=v;}
-function gv(fn,action){var args=[];for(var i=2;i<arguments.length;i++)args.push(arguments[i]);showLoading();fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:action,args:args})}).then(function(r){return r.json();}).then(function(r){hideLoading();fn(r);}).catch(function(e){hideLoading();console.error(e);alert('Error: '+e.message);});}
+function gv(fn,action){var args=[];for(var i=2;i<arguments.length;i++)args.push(arguments[i]);showLoading();var url=GAS_URL+'?action='+encodeURIComponent(action);args.forEach(function(a,i){url+='&a'+i+'='+encodeURIComponent(typeof a==='string'?a:JSON.stringify(a));});fetch(url).then(function(r){return r.json();}).then(function(r){hideLoading();fn(r);}).catch(function(e){hideLoading();console.error(e);alert('Error: '+e.message);});}
 function showLoading(){document.getElementById('loadingOverlay').classList.add('show');}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
 function qs(action,callback){gv(callback,action);}

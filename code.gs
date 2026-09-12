@@ -46,20 +46,21 @@ const SHEETS = {
 const USERS_SHEET = 'Users';
 
 function doGet(e) {
-  if (e && e.parameter && e.parameter.action) {
-    return doPost(e);
-  }
-  setupSheets_();
-  return ContentService.createTextOutput(JSON.stringify({ok:true,message:'SMART KIA API is running'}))
-    .setMimeType(ContentService.MimeType.JSON);
-}
-
-function doPost(e) {
   try {
-    const body = JSON.parse(e.postData.contents);
-    const action = body.action;
-    const args = body.args || [];
-    const fn = {
+    var action = e && e.parameter && e.parameter.action;
+    if (!action) {
+      setupSheets_();
+      return ContentService.createTextOutput(JSON.stringify({ok:true,message:'SMART KIA API is running'}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    var args = [];
+    for (var i = 0; i < 20; i++) {
+      var val = e.parameter['a' + i];
+      if (val === undefined) break;
+      try { val = JSON.parse(val); } catch(ignored) {}
+      args.push(val);
+    }
+    var fn = {
       loginUser: function(){return loginUser(args[0],args[1]);},
       saveData: function(){return saveData(args[0],args[1],args[2]);},
       editData: function(){return editData(args[0],args[1],args[2],args[3]);},
@@ -81,7 +82,7 @@ function doPost(e) {
       getMonthlyStats: function(){return getMonthlyStats();}
     };
     if (!fn[action]) throw new Error('Action tidak dikenal: ' + action);
-    const result = fn[action]();
+    var result = fn[action]();
     return ContentService.createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
