@@ -780,21 +780,86 @@ function openUtility(type){
   } else if(type==='panduan'){
     el.innerHTML=`<div class="topbar"><div style="font-size:20px;color:#9d174d;font-weight:600;">&#x1F4D6; Panduan Penggunaan</div></div>
     <div class="module-view">
-      <h2 style="margin-bottom:12px;">&#x1F4D6; Panduan Penggunaan SMART-KIA</h2>
-      <div style="font-size:13px;line-height:1.8;">
-        <h3 style="color:#be185d;">&#x1F511; Login</h3>
-        <p>Masukkan username dan password. Default: admin / admin123</p>
-        <h3 style="color:#be185d;margin-top:12px;">&#x1F4DD; Modul Input Data</h3>
-        <ul style="padding-left:16px;">
-          <li><b>Pasien (RM)</b>: Input data identitas pasien baru</li>
-          <li><b>ANC</b>: Input data pemeriksaan kehamilan (ANC)</li>
-          <li><b>Persalinan</b>: Input data persalinan</li>
-          <li><b>Nifas</b>: Input data pasca persalinan (nifas)</li>
-          <li><b>Bayi</b>: Input data bayi/kunak</li>
-          <li><b>KB</b>: Input data KB / alat kontrasepsi</li>
-        </ul>
-        <h3 style="color:#be185d;margin-top:12px;">&#x2699; Pengaturan</h3>
-        <p>Ganti password dan kelola akun user (admin only).</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <h2 style="margin:0;">&#x1F4D6; Panduan Penggunaan SMART-KIA</h2>
+        <a href="PANDUAN_SMART_KIA_v2.pdf" download style="display:inline-flex;align-items:center;gap:6px;background:#e91e63;color:white;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;box-shadow:0 2px 8px rgba(233,30,99,0.3);">📄 Unduh Panduan PDF</a>
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F511; Login</h3>
+        <p style="margin:0 0 8px;">Masukkan username dan password. Default: <b>admin</b> / <b>admin123</b></p>
+        <img src="screenshots/01-login.png" style="width:100%;max-width:500px;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4CA; Dashboard</h3>
+        <p style="margin:0 0 8px;">Halaman utama menampilkan ringkasan data: total kunjungan, data ibu & bayi, grafik bulanan, dan monitoring kelengkapan.</p>
+        <img src="screenshots/02-dashboard.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4DD; Modul Pasien (RM)</h3>
+        <p style="margin:0 0 8px;">Input data identitas pasien: No RM, Nama Ibu, Nama Suami, NIK, Umur, Alamat, No HP. Klik <b>"Tambah"</b> untuk menambah data baru.</p>
+        <img src="screenshots/03-pasien.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4DD; Modul ANC (Antenatal Care)</h3>
+        <p style="margin:0 0 8px;">Pencatatan kunjungan ibu hamil: Tanggal Kunjungan, DJJ, UK, HB, Syphilis, HIV, HbSAg, GolDA, GDS, Keluhan, Rujuk.</p>
+        <img src="screenshots/04-anc.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4DD; Modul Persalinan</h3>
+        <p style="margin:0 0 8px;">Pencatatan data persalinan: Tanggal Persalinan, Usia Kehamilan, Jenis Persalinan, Jenis Kelamin Bayi, Berat Bayi, Rujuk.</p>
+        <img src="screenshots/07-persalinan.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4DD; Modul Nifas</h3>
+        <p style="margin:0 0 8px;">Pencatatan masa nifas: Tanggal Kunjungan Nifas, Kunjungan Nifas Ke, Keadaan Umum, TFU, Lochia, ASI, Rujuk.</p>
+        <img src="screenshots/08-nifas.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4DD; Modul Bayi</h3>
+        <p style="margin:0 0 8px;">Pencatatan data bayi: Nama Bayi, Jenis Kelamin, Tanggal Lahir, Nama Ayah, Keadaan Bayi, Rujuk.</p>
+        <img src="screenshots/09-bayi.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4DD; Modul KB (Keluarga Berencana)</h3>
+        <p style="margin:0 0 8px;">Pencatatan peserta KB: Metode KB, Status Kepesertaan (KB Baru / KB Aktif / Ganti Cara), Rujuk, Keterangan.</p>
+        <img src="screenshots/10-kb.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4CA; Monitoring Kelengkapan</h3>
+        <p style="margin:0 0 8px;">Cek kelengkapan register pasien: apakah sudah ada data ANC, Persalinan, Nifas, Bayi, dan KB.</p>
+        <img src="screenshots/11-monitoring.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4C4; Laporan & Cetak</h3>
+        <p style="margin:0 0 8px;">Export data ke Excel atau PDF. Ringkasan laporan otomatis ditampilkan.</p>
+        <img src="screenshots/12-laporan.png" style="width:100%;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x1F4D6; Barcode</h3>
+        <p style="margin:0 0 8px;">Generate dan cetak barcode No RM untuk identifikasi pasien.</p>
+        <img src="screenshots/13-barcode.png" style="width:100%;max-width:500px;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="background:#fce4ec;border-radius:10px;padding:16px;margin-bottom:20px;">
+        <h3 style="color:#be185d;margin:0 0 8px;">&#x2699; Pengaturan</h3>
+        <p style="margin:0 0 8px;">Ganti password dan kelola akun user (admin only).</p>
+        <img src="screenshots/06-pengaturan.png" style="width:100%;max-width:500px;border-radius:8px;border:1px solid #f8bbd0;">
+      </div>
+
+      <div style="text-align:center;padding:20px;background:#fff;border:2px dashed #f8bbd0;border-radius:10px;margin-top:10px;">
+        <p style="font-size:14px;color:#666;margin-bottom:10px;">Butuh panduan lengkap offline?</p>
+        <a href="PANDUAN_SMART_KIA_v2.pdf" download style="display:inline-flex;align-items:center;gap:8px;background:#e91e63;color:white;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;box-shadow:0 4px 12px rgba(233,30,99,0.3);">📄 Unduh Panduan Lengkap (PDF)</a>
       </div>
     </div>`;
   } else if(type==='aktivitas'){
