@@ -439,7 +439,7 @@ MODULES = {
 <script>
 var GAS_URL='https://script.google.com/macros/s/AKfycbyw3j8G2L3-pPiADx8RbKjI78w3Q1uJrknM2ZKw6ACBnkgR0ZhfFX60OZCfCTVv37KVQQ/exec';
 
-function showView(v){currentView=v;}
+function showView(v){currentView=v;try{localStorage.setItem('kia_page',v);}catch(e){}}
 function gv(fn,action){var args=[];for(var i=2;i<arguments.length;i++)args.push(arguments[i]);showLoading();var url=GAS_URL+'?action='+encodeURIComponent(action);args.forEach(function(a,i){url+='&a'+i+'='+encodeURIComponent(typeof a==='string'?a:JSON.stringify(a));});fetch(url).then(function(r){return r.json();}).then(function(r){hideLoading();fn(r);}).catch(function(e){hideLoading();console.error(e);alert('Error: '+e.message);});}
 function showLoading(){document.getElementById('loadingOverlay').classList.add('show');}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
@@ -467,7 +467,7 @@ function doLogin(){
 }
 function doLogout(){
   currentUser='';currentRole='';currentNama='';currentView='';
-  try{localStorage.removeItem('kia_user');localStorage.removeItem('kia_role');localStorage.removeItem('kia_nama');}catch(e){}
+  try{localStorage.removeItem('kia_user');localStorage.removeItem('kia_role');localStorage.removeItem('kia_nama');localStorage.removeItem('kia_page');}catch(e){}
   document.getElementById('appWrap').classList.remove('show');
   document.getElementById('loginWrap').style.display='flex';
 }
@@ -597,6 +597,7 @@ function getFormSections(type){
 function openModule(type){
   var c=MODULES[type];
   if(!c)return;
+  showView(type);
   document.querySelectorAll('.menu-item').forEach(function(m){m.classList.remove('active');});
   showLoading();
   if(type==='monitoring'){
@@ -1072,7 +1073,16 @@ document.addEventListener('DOMContentLoaded',function(){
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('appWrap').classList.add('show');
       applyRoleVisibility();
-      showDashboard();
+      var savedPage=localStorage.getItem('kia_page');
+      if(savedPage==='dashboard'||!savedPage){
+        showDashboard();
+      }else if(savedPage==='monitoring'){
+        openModule('monitoring');
+      }else if(['pasien','anc','persalinan','nifas','bayi','kb'].indexOf(savedPage)!==-1){
+        openModule(savedPage);
+      }else{
+        openUtility(savedPage);
+      }
     }
   }catch(e){}
 });
