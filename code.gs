@@ -79,7 +79,8 @@ function doGet(e) {
       exportToPDF: function(){return exportToPDF(args[0]);},
       getBarcodeData: function(){return getBarcodeData(args[0]);},
       getModuleSummary: function(){return getModuleSummary();},
-      getMonthlyStats: function(){return getMonthlyStats();}
+      getMonthlyStats: function(){return getMonthlyStats();},
+      getFullDashboard: function(){return getFullDashboard();}
     };
     if (!fn[action]) throw new Error('Action tidak dikenal: ' + action);
     var result = fn[action]();
@@ -333,6 +334,101 @@ function searchPatient(query) {
 function getSheetHeaders(module) {
   if (!SHEETS[module]) throw new Error('Modul tidak ditemukan: ' + module);
   return SHEETS[module];
+}
+
+function getFullDashboard() {
+  setupSheets_();
+  const cache = {};
+  function rows(m){if(!cache[m])cache[m]=getRows_(m);return cache[m];}
+
+  const counts = {};
+  Object.keys(SHEETS).forEach(m => { if (m !== 'monitoring') counts[m] = rows(m).length; });
+
+  const kbRows = rows('kb');
+  const norm = v => String(v || '').trim().toLowerCase();
+  const kbBaru = kbRows.filter(r => norm(r['Status Kepesertaan']) === 'kb baru').length;
+  const kbAktif = kbRows.filter(r => norm(r['Status Kepesertaan']) === 'kb aktif').length;
+  const gantiCara = kbRows.filter(r => norm(r['Status Kepesertaan']) === 'ganti cara').length;
+
+  const logSheet = getSS_().getSheetByName('Aktivitas');
+  const last = logSheet.getLastRow();
+  const activities = last > 1
+    ? logSheet.getRange(Math.max(2,last-4),1,Math.min(5,last-1),4).getDisplayValues().reverse()
+    : [];
+
+  const pasienRows = rows('pasien');
+  const ancRows = rows('anc');
+  const persalinanRows = rows('persalinan');
+  const nifasRows = rows('nifas');
+  const bayiRows = rows('bayi');
+  const totalPasien = pasienRows.length;
+  const totalANC = counts.anc || 0;
+  const totalPersalinan = counts.persalinan || 0;
+  const totalNifas = counts.nifas || 0;
+  const totalKB_ = counts.kb || 0;
+  const totalBayi = counts.bayi || 0;
+  const totalKunjungan = totalANC + totalPersalinan + totalNifas + totalKB_;
+
+  const now = new Date();
+  const thisYear = now.getFullYear();
+  const monthlyLabels = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+  const monthlyIbu = Array(12).fill(0);
+  const monthlyBayi = Array(12).fill(0);
+
+  rows('anc').forEach(r => {
+    const d = new Date(r['Tanggal Kunjungan'] || r['Waktu Input']);
+    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+  });
+  persalinanRows.forEach(r => {
+    const d = new Date(r['Tanggal Persalinan'] || r['Waktu Input']);
+    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+  });
+  nifasRows.forEach(r => {
+    const d = new Date(r['Tanggal Kunjungan Nifas'] || r['Waktu Input']);
+    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+  });
+  bayiRows.forEach(r => {
+    const d = new Date(r['Tanggal Lahir'] || r['Waktu Input']);
+    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyBayi[d.getMonth()]++;
+  });
+
+  // kelengkapan
+  const kelengkapan = pasienRows.map(p => {
+    const noRM = String(p['No RM']||'').trim();
+    return {
+      noRM: noRM,
+      nama: p['Nama Ibu']||'',
+      anc: ancRows.some(a => String(a['No RM']||'').trim() === noRM),
+      persalinan: persalinanRows.some(a => String(a['No RM']||'').trim() === noRM),
+      nifas: nifasRows.some(a => String(a['No RM']||'').trim() === noRM),
+      bayi: bayiRows.some(a => String(a['No RM']||'').trim() === noRM),
+      kb: kbRows.some(a => String(a['No RM']||'').trim() === noRM)
+    };
+  });
+
+  return {
+    totalPasien: totalPasien,
+    totalKunjungan: totalKunjungan,
+    totalIbu: totalPasien,
+    totalBayi: totalBayi,
+    pasienAktif: totalPasien,
+    totalKB: totalKB_,
+    totalANC: totalANC,
+    totalPersalinan: totalPersalinan,
+    totalNifas: totalNifas,
+    counts: counts,
+    kbBaru: kbBaru,
+    kbAktif: kbAktif,
+    gantiCara: gantiCara,
+    lastPatients: pasienRows.slice(-5).reverse().map(p => [p['No RM']||'', p['Nama Ibu']||'', p['Umur']||'', p['Status']||'Aktif']),
+    activityLog: activities,
+    monthlyLabels: monthlyLabels,
+    monthlyIbu: monthlyIbu,
+    monthlyBayi: monthlyBayi,
+    pieLabels: ['ANC','Persalinan','Nifas','Bayi','KB'],
+    pieData: [totalANC, totalPersalinan, totalNifas, totalBayi, totalKB_],
+    kelengkapan: kelengkapan
+  };
 }
 
 function getModuleSummary() {

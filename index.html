@@ -561,13 +561,18 @@ function doSearch(){
 function showDashboard(){
   setActiveMenu(document.querySelector('.menu-item'));
   showLoading();
+  var cached=null;
+  try{cached=JSON.parse(localStorage.getItem('kia_dash_cache'));}catch(e){}
+  if(cached && (Date.now()-cached.ts<300000)){
+    renderDashboard(cached.data);
+    hideLoading();
+    return;
+  }
   gv(function(r){
-    gv(function(k){
-      r.kelengkapan=k;
-      renderDashboard(r);
-      hideLoading();
-    },'getKelengkapanData');
-  },'getDashboard');
+    try{localStorage.setItem('kia_dash_cache',JSON.stringify({data:r,ts:Date.now()}));}catch(e){}
+    renderDashboard(r);
+    hideLoading();
+  },'getFullDashboard');
 }
 function getFormSections(type){
   var c=MODULES[type];
@@ -649,6 +654,7 @@ function toggleForm(type){
   var f=document.getElementById('formArea');
   f.style.display=f.style.display==='none'?'block':'none';
 }
+function clearCache(){try{localStorage.removeItem('kia_dash_cache');}catch(e){}}
 function saveModule(ev,type){
   ev.preventDefault();
   var form=document.getElementById('moduleForm');
@@ -656,7 +662,7 @@ function saveModule(ev,type){
   var row={};
   fields.forEach(function(f){if(f.type!=='checkbox')row[f.id]=f.value;});
   gv(function(r){
-    if(r&&r.ok){alert('Data berhasil disimpan!');openModule(type);}else{alert('Gagal simpan: '+(r&&r.message||'Unknown error'));}
+    if(r&&r.ok){clearCache();alert('Data berhasil disimpan!');openModule(type);}else{alert('Gagal simpan: '+(r&&r.message||'Unknown error'));}
   },'saveData',type,JSON.stringify(row),currentUser);
 }
 function editRow(type,idx,data){
@@ -680,7 +686,7 @@ function editRow(type,idx,data){
       if(f.type!=='checkbox')row[f.id]=f.value;
     });
     gv(function(r){
-      if(r&&r.ok){alert('Berhasil diupdate!');openModule(type);}else{alert('Gagal update');}
+      if(r&&r.ok){clearCache();alert('Berhasil diupdate!');openModule(type);}else{alert('Gagal update');}
     },'editData',type,rowId,JSON.stringify(row),currentUser);
   };
 }
@@ -689,7 +695,7 @@ function deleteRow(type,idx){
   var data=window._lastData||{};
   var rowId=data.rows&&data.rows[idx]?data.rows[idx]['ID']:'';
   gv(function(r){
-    if(r&&r.ok){alert('Berhasil dihapus!');openModule(type);}else{alert('Gagal hapus');}
+    if(r&&r.ok){clearCache();alert('Berhasil dihapus!');openModule(type);}else{alert('Gagal hapus');}
   },'deleteData',type,rowId,currentUser);
 }
 function renderPasienData(d){
