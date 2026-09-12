@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Panduan SMART KIA HOBA KALLA</title>
+<style>
+  @page { size: A4; margin: 18mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.5; color: #333; font-size: 13px; }
+  .cover { page-break-after: always; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #e91e63, #f06292, #f8bbd0); color: white; text-align: center; padding: 60px 40px; }
+  .cover h1 { font-size: 38px; margin-bottom: 8px; }
+  .cover .subtitle { font-size: 18px; opacity: 0.9; }
+  .cover .tagline { font-size: 14px; font-style: italic; opacity: 0.8; margin: 20px 0; }
+  .cover .box { background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 10px; }
+  .cover .info { font-size: 12px; opacity: 0.7; margin-top: 30px; }
+  .toc { page-break-after: always; padding: 25px 0; }
+  .toc h2 { font-size: 22px; color: #e91e63; margin-bottom: 12px; border-bottom: 2px solid #e91e63; padding-bottom: 6px; }
+  .toc ul { list-style: none; columns: 2; column-gap: 25px; }
+  .toc li { padding: 3px 0; border-bottom: 1px dashed #ddd; font-size: 12px; }
+  .toc li span { color: #e91e63; font-weight: bold; margin-right: 6px; }
+  .chapter { page-break-before: always; padding: 10px 0; }
+  .chapter:first-of-type { page-break-before: avoid; }
+  h2 { font-size: 22px; color: #e91e63; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #f8bbd0; }
+  h3 { font-size: 17px; color: #c2185b; margin: 14px 0 6px; }
+  p { margin: 6px 0; text-align: justify; }
+  ol, ul { margin: 6px 0 6px 25px; }
+  li { margin: 3px 0; }
+  code { background: #f5f5f5; padding: 1px 5px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 12px; color: #c2185b; }
+  .screenshot { text-align: center; margin: 14px 0; page-break-inside: avoid; }
+  .screenshot img { max-width: 100%; border: 2px solid #e0e0e0; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .screenshot .caption { font-size: 11px; color: #666; margin-top: 4px; font-style: italic; }
+  .note { background: #fff3e0; border-left: 4px solid #ff9800; padding: 8px 12px; margin: 10px 0; border-radius: 0 4px 4px 0; font-size: 12px; }
+  .tip { background: #e8f5e9; border-left: 4px solid #4caf50; padding: 8px 12px; margin: 10px 0; border-radius: 0 4px 4px 0; font-size: 12px; }
+  .warning { background: #ffebee; border-left: 4px solid #f44336; padding: 8px 12px; margin: 10px 0; border-radius: 0 4px 4px 0; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+  th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+  th { background: #fce4ec; color: #c2185b; }
+  tr:nth-child(even) { background: #fafafa; }
+  .file-tree { background: #f5f5f5; padding: 10px 15px; border-radius: 6px; font-family: 'Courier New', monospace; font-size: 12px; margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div style="font-size:60px;margin-bottom:15px;">👩‍🍼</div>
+  <h1>SMART KIA HOBA KALLA</h1>
+  <div class="subtitle">Sistem Informasi Kesehatan Ibu dan Anak</div>
+  <div class="tagline">"Ibu Sehat, Bayi Kuat, Keluarga Bahagia ♥"</div>
+  <div class="box">
+    <h3 style="color:white;border:none;margin:0;">PANDUAN LENGKAP PENGGUNAAN</h3>
+    <p style="color:white;opacity:0.9;">Versi 1.0 — September 2026</p>
+  </div>
+  <div class="info">
+    <p>Website: https://smart-kia-hobakala.vercel.app</p>
+    <p>Dikembangkan untuk Posyandu Hoba Kalla</p>
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Daftar Isi</h2>
+  <ul>
+    <li><span>1</span> Pengenalan Sistem</li>
+    <li><span>2</span> Login ke Sistem</li>
+    <li><span>3</span> Dashboard Utama</li>
+    <li><span>4</span> Modul Pasien (RM)</li>
+    <li><span>5</span> Modul ANC</li>
+    <li><span>6</span> Modul Persalinan</li>
+    <li><span>7</span> Modul Nifas</li>
+    <li><span>8</span> Modul Bayi</li>
+    <li><span>9</span> Modul KB</li>
+    <li><span>10</span> Monitoring Kelengkapan</li>
+    <li><span>11</span> Laporan & Cetak</li>
+    <li><span>12</span> Barcode</li>
+    <li><span>13</span> Pengaturan Akun</li>
+    <li><span>14</span> Arsitektur & Deploy</li>
+    <li><span>15</span> Troubleshooting</li>
+  </ul>
+</div>
+
+<div class="chapter">
+  <h2>1. Pengenalan Sistem</h2>
+  <h3>1.1 Apa itu SMART KIA?</h3>
+  <p>SMART KIA adalah aplikasi web untuk mencatat dan memantau data kesehatan ibu dan bayi di Posyandu. Fitur utama:</p>
+  <ul>
+    <li>Pencatatan data pasien (rekam medis)</li>
+    <li>Monitoring kunjungan ANC (Antenatal Care)</li>
+    <li>Pencatatan data persalinan</li>
+    <li>Monitoring masa nifas</li>
+    <li>Pencatatan data bayi baru lahir</li>
+    <li>Program Keluarga Berencana (KB)</li>
+    <li>Laporan dan grafik</li>
+  </ul>
+  <h3>1.2 Arsitektur Sistem</h3>
+  <table>
+    <tr><th>Komponen</th><th>Teknologi</th><th>Fungsi</th></tr>
+    <tr><td>Frontend</td><td>HTML/CSS/JS</td><td>Tampilan aplikasi (Vercel)</td></tr>
+    <tr><td>Backend</td><td>Google Apps Script</td><td>API & pemrosesan data</td></tr>
+    <tr><td>Database</td><td>Google Sheets</td><td>Penyimpanan data</td></tr>
+  </table>
+  <p><strong>URL:</strong> <code>https://smart-kia-hobakala.vercel.app</code></p>
+</div>
+
+<div class="chapter">
+  <h2>2. Login ke Sistem</h2>
+  <div class="screenshot">
+    <img src="screenshots/01-login.png" alt="Halaman Login">
+    <div class="caption">Gambar 2.1 — Halaman Login SMART KIA</div>
+  </div>
+  <h3>Cara Login</h3>
+  <ol>
+    <li>Buka browser, ketik <code>https://smart-kia-hobakala.vercel.app</code></li>
+    <li>Masukkan <strong>Username</strong> dan <strong>Password</strong></li>
+    <li>Klik tombol <strong>"Masuk"</strong></li>
+  </ol>
+  <div class="warning"><strong>Penting:</strong> Jangan bagikan kredensial login kepada orang yang tidak berwenang.</div>
+</div>
+
+<div class="chapter">
+  <h2>3. Dashboard Utama</h2>
+  <div class="screenshot">
+    <img src="screenshots/02-dashboard.png" alt="Dashboard Utama">
+    <div class="caption">Gambar 3.1 — Dashboard Utama SMART KIA</div>
+  </div>
+  <h3>3.1 Komponen Dashboard</h3>
+  <table>
+    <tr><th>Bagian</th><th>Penjelasan</th></tr>
+    <tr><td>Total Kunjungan</td><td>Jumlah kunjungan bulan ini & total</td></tr>
+    <tr><td>Data Ibu / Bayi</td><td>Jumlah data yang tercatat</td></tr>
+    <tr><td>Pasien Aktif</td><td>Jumlah pasien aktif bulan ini</td></tr>
+    <tr><td>KB</td><td>Peserta aktif Keluarga Berencana</td></tr>
+    <tr><td>Kunjungan Bulanan</td><td>Grafik batang per bulan</td></tr>
+    <tr><td>Komposisi Data</td><td>Grafik pie jenis kunjungan</td></tr>
+    <tr><td>Data Pasien Terakhir</td><td>5 pasien terbaru</td></tr>
+    <tr><td>Monitoring Kelengkapan</td><td>Kelengkapan register</td></tr>
+  </table>
+  <h3>3.2 Menu Navigasi (Sidebar)</h3>
+  <p>Dashboard, Pasien (RM), ANC, Persalinan, Nifas, Bayi, KB, Monitoring, Master Data, Laporan & Cetak, Grafik Bulanan, Aktivitas Terakhir, Barcode, Panduan, Pengaturan, Logout.</p>
+</div>
+
+<div class="chapter">
+  <h2>4. Modul Pasien (RM)</h2>
+  <div class="screenshot">
+    <img src="screenshots/03-pasien.png" alt="Modul Pasien">
+    <div class="caption">Gambar 4.1 — Daftar Data Pasien</div>
+  </div>
+  <h3>4.1 Menambah Pasien</h3>
+  <ol>
+    <li>Klik <strong>"Pasien (RM)"</strong> di sidebar</li>
+    <li>Klik <strong>"➕ Tambah"</strong></li>
+    <li>Isi formulir: No RM, Nama Ibu, Nama Suami, NIK, Umur, Alamat, No HP</li>
+    <li>Klik <strong>"Simpan"</strong></li>
+  </ol>
+  <h3>4.2 Edit / Hapus</h3>
+  <p>Klik tombol <strong>"Edit"</strong> atau <strong>"Hapus"</strong> pada baris data yang diinginkan.</p>
+  <div class="warning"><strong>Peringatan:</strong> Penghapusan data bersifat permanen.</div>
+</div>
+
+<div class="chapter">
+  <h2>5. Modul ANC (Antenatal Care)</h2>
+  <div class="screenshot">
+    <img src="screenshots/04-anc.png" alt="Modul ANC">
+    <div class="caption">Gambar 5.1 — Formulir Data ANC</div>
+  </div>
+  <h3>5.1 Cara Menambah Data ANC</h3>
+  <ol>
+    <li>Klik <strong>"ANC"</strong> di sidebar</li>
+    <li>Klik <strong>"➕ Tambah"</strong></li>
+    <li>Pilih No RM pasien</li>
+    <li>Isi data: Tanggal Kunjungan, DJJ, UK, HB, Syphilis, HIV, HbSAg, GolDA, GDS, Keluhan, Rujuk</li>
+    <li>Klik <strong>"Simpan"</strong></li>
+  </ol>
+  <div class="tip"><strong>Tips:</strong> Pastikan No RM sudah terdaftar di modul Pasien sebelum menambah data ANC.</div>
+</div>
+
+<div class="chapter">
+  <h2>6. Modul Persalinan</h2>
+  <div class="screenshot">
+    <img src="screenshots/07-persalinan.png" alt="Modul Persalinan">
+    <div class="caption">Gambar 6.1 — Formulir Data Persalinan</div>
+  </div>
+  <h3>6.1 Cara Mengisi</h3>
+  <ol>
+    <li>Klik <strong>"Persalinan"</strong> di sidebar</li>
+    <li>Klik <strong>"➕ Tambah"</strong></li>
+    <li>Pilih No RM, isi: Tanggal Persalinan, Usia Kehamilan, Jenis Persalinan, Jenis Kelamin Bayi, Berat Bayi, Rujuk</li>
+    <li>Klik <strong>"Simpan"</strong></li>
+  </ol>
+</div>
+
+<div class="chapter">
+  <h2>7. Modul Nifas</h2>
+  <div class="screenshot">
+    <img src="screenshots/08-nifas.png" alt="Modul Nifas">
+    <div class="caption">Gambar 7.1 — Formulir Data Nifas</div>
+  </div>
+  <h3>7.1 Cara Pengisian</h3>
+  <ol>
+    <li>Klik <strong>"Nifas"</strong> di sidebar</li>
+    <li>Klik <strong>"➕ Tambah"</strong></li>
+    <li>Pilih No RM, isi: Tanggal Kunjungan Nifas, Kunjungan Nifas Ke, Keadaan Umum, TFU, Lochia, ASI, Rujuk, Keterangan</li>
+    <li>Klik <strong>"Simpan"</strong></li>
+  </ol>
+</div>
+
+<div class="chapter">
+  <h2>8. Modul Bayi</h2>
+  <div class="screenshot">
+    <img src="screenshots/09-bayi.png" alt="Modul Bayi">
+    <div class="caption">Gambar 8.1 — Formulir Data Bayi</div>
+  </div>
+  <h3>8.1 Cara Menambah Data Bayi</h3>
+  <ol>
+    <li>Klik <strong>"Bayi"</strong> di sidebar</li>
+    <li>Klik <strong>"➕ Tambah"</strong></li>
+    <li>Pilih No RM ibu, isi: Nama Bayi, Jenis Kelamin, Tanggal Lahir, Nama Ayah, Keadaan Bayi, Rujuk</li>
+    <li>Klik <strong>"Simpan"</strong></li>
+  </ol>
+</div>
+
+<div class="chapter">
+  <h2>9. Modul KB (Keluarga Berencana)</h2>
+  <div class="screenshot">
+    <img src="screenshots/10-kb.png" alt="Modul KB">
+    <div class="caption">Gambar 9.1 — Formulir Data KB</div>
+  </div>
+  <h3>9.1 Status Kepesertaan KB</h3>
+  <table>
+    <tr><th>Status</th><th>Keterangan</th></tr>
+    <tr><td>KB Baru</td><td>Peserta baru pertama kali</td></tr>
+    <tr><td>KB Aktif</td><td>Peserta aktif (sudah pernah pakai KB)</td></tr>
+    <tr><td>Ganti Cara</td><td>Peserta mengganti jenis KB</td></tr>
+  </table>
+</div>
+
+<div class="chapter">
+  <h2>10. Monitoring Kelengkapan</h2>
+  <div class="screenshot">
+    <img src="screenshots/11-monitoring.png" alt="Monitoring Kelengkapan">
+    <div class="caption">Gambar 10.1 — Monitoring Kelengkapan Register</div>
+  </div>
+  <p>Modul ini menampilkan kelengkapan register pasien. Cek apakah setiap pasien sudah memiliki data ANC, Persalinan, Nifas, Bayi, dan KB.</p>
+  <div class="tip"><strong>Tips:</strong> Gunakan monitoring ini untuk memastikan semua data pasien lengkap.</div>
+</div>
+
+<div class="chapter">
+  <h2>11. Laporan & Cetak</h2>
+  <div class="screenshot">
+    <img src="screenshots/12-laporan.png" alt="Laporan & Cetak">
+    <div class="caption">Gambar 11.1 — Halaman Laporan & Cetak</div>
+  </div>
+  <h3>11.1 Membuat Laporan</h3>
+  <ol>
+    <li>Klik <strong>"Laporan & Cetak"</strong></li>
+    <li>Klik <strong>"Export Excel"</strong> atau <strong>"Export PDF"</strong></li>
+    <li>File akan otomatis terdownload</li>
+  </ol>
+</div>
+
+<div class="chapter">
+  <h2>12. Barcode</h2>
+  <div class="screenshot">
+    <img src="screenshots/13-barcode.png" alt="Modul Barcode">
+    <div class="caption">Gambar 12.1 — Modul Barcode</div>
+  </div>
+  <ol>
+    <li>Klik <strong>"Barcode"</strong></li>
+    <li>Masukkan No RM</li>
+    <li>Klik <strong>"Generate"</strong> lalu <strong>"Print"</strong></li>
+  </ol>
+</div>
+
+<div class="chapter">
+  <h2>13. Pengaturan Akun</h2>
+  <div class="screenshot">
+    <img src="screenshots/06-pengaturan.png" alt="Pengaturan Akun">
+    <div class="caption">Gambar 13.1 — Halaman Pengaturan</div>
+  </div>
+  <h3>13.1 Mengubah Password</h3>
+  <ol>
+    <li>Klik <strong>"Pengaturan"</strong></li>
+    <li>Isi password lama, password baru, konfirmasi</li>
+    <li>Klik <strong>"Simpan Password"</strong></li>
+  </ol>
+  <h3>13.2 Manajemen User (Admin)</h3>
+  <p>Admin dapat menambah dan menghapus user melalui tab <strong>"Manajemen Akun"</strong>.</p>
+  <div class="warning"><strong>Penting:</strong> Gunakan password yang kuat. Jangan bagikan kredensial.</div>
+</div>
+
+<div class="chapter">
+  <h2>14. Arsitektur & Deploy</h2>
+  <h3>14.1 Struktur File</h3>
+  <div class="file-tree">
+    <div><strong style="color:#e91e63;">smart-kia/</strong></div>
+    <div>&nbsp;&nbsp;├── <strong>index.html</strong> — Frontend</div>
+    <div>&nbsp;&nbsp;├── <strong>code.gs</strong> — Backend Google Apps Script</div>
+    <div>&nbsp;&nbsp;├── <strong>screenshots/</strong> — Screenshot panduan</div>
+    <div>&nbsp;&nbsp;└── <strong>PANDUAN_SMART_KIA.pdf</strong> — Panduan PDF</div>
+  </div>
+  <h3>14.2 Deploy ke Vercel</h3>
+  <ol>
+    <li>Buka <code>vercel.com</code>, login dengan GitHub</li>
+    <li>Klik <strong>"New Project"</strong> → pilih repo <strong>smart-kia-hobakala</strong></li>
+    <li>Klik <strong>"Deploy"</strong></li>
+    <li>Website tersedia di <code>smart-kia-hobakala.vercel.app</code></li>
+  </ol>
+  <h3>14.3 Deploy ke Google Apps Script</h3>
+  <ol>
+    <li>Buka <code>script.google.com</code></li>
+    <li>Buka project SMART KIA</li>
+    <li>Deploy → New deployment → Web app</li>
+    <li>Execute as: <strong>Me</strong>, Who has access: <strong>Anyone</strong></li>
+    <li>Salin URL Web App</li>
+  </ol>
+  <div class="note"><strong>Catatan:</strong> Setiap perubahan <code>code.gs</code> harus re-deploy di GAS.</div>
+</div>
+
+<div class="chapter">
+  <h2>15. Troubleshooting</h2>
+  <table>
+    <tr><th>Masalah</th><th>Solusi</th></tr>
+    <tr><td>Login gagal</td><td>Hubungi admin untuk reset password</td></tr>
+    <tr><td>Loading lama</td><td>Tunggu beberapa detik, GAS butuh warm-up</td></tr>
+    <tr><td>Data kosong</td><td>Pastikan sudah menambah data di modul terkait</td></tr>
+    <tr><td>Error 500</td><td>Refresh halaman, cek log di Google Apps Script</td></tr>
+    <tr><td>Error koneksi</td><td>Periksa koneksi internet</td></tr>
+  </table>
+  <h3>Tips Performa</h3>
+  <ul>
+    <li>Gunakan Chrome atau Edge untuk performa terbaik</li>
+    <li>Bersihkan cache browser secara berkala</li>
+    <li>Gunakan WiFi untuk upload data banyak</li>
+  </ul>
+  <div style="text-align:center; margin-top:30px; padding:15px; background:#fce4ec; border-radius:10px;">
+    <p style="font-size:16px; color:#c2185b;"><strong>SMART KIA HOBA KALLA</strong></p>
+    <p>"Ibu Sehat, Bayi Kuat, Keluarga Bahagia ♥"</p>
+    <p style="font-size:11px; color:#666; margin-top:8px;">© 2026 — Dikembangkan untuk Posyandu Hoba Kalla</p>
+  </div>
+</div>
+
+</body>
+</html>
