@@ -7,17 +7,12 @@
   @page { size: A4; margin: 18mm; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.5; color: #333; font-size: 13px; }
-  .cover { page-break-after: always; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #e91e63, #f06292, #f8bbd0); color: white; text-align: center; padding: 60px 40px; }
-  .cover h1 { font-size: 38px; margin-bottom: 8px; }
-  .cover .subtitle { font-size: 18px; opacity: 0.9; }
-  .cover .tagline { font-size: 14px; font-style: italic; opacity: 0.8; margin: 20px 0; }
-  .cover .box { background: rgba(255,255,255,0.2); padding: 15px 25px; border-radius: 10px; }
-  .cover .info { font-size: 12px; opacity: 0.7; margin-top: 30px; }
-  .toc { page-break-after: always; padding: 25px 0; }
-  .toc h2 { font-size: 22px; color: #e91e63; margin-bottom: 12px; border-bottom: 2px solid #e91e63; padding-bottom: 6px; }
-  .toc ul { list-style: none; columns: 2; column-gap: 25px; }
-  .toc li { padding: 3px 0; border-bottom: 1px dashed #ddd; font-size: 12px; }
-  .toc li span { color: #e91e63; font-weight: bold; margin-right: 6px; }
+  .cover { page-break-after: always; }
+  .toc { page-break-after: always; padding: 0; }
+  .toc h2 { font-size: 20px; color: #e91e63; margin: 0 0 8px; border-bottom: 2px solid #e91e63; padding-bottom: 4px; }
+  .toc ul { list-style: none; columns: 2; column-gap: 20px; margin: 0; padding: 0; }
+  .toc li { padding: 2px 0; border-bottom: 1px dashed #ddd; font-size: 12px; }
+  .toc li span { color: #e91e63; font-weight: bold; margin-right: 4px; }
   .chapter { page-break-before: always; padding: 10px 0; }
   .chapter:first-of-type { page-break-before: avoid; }
   h2 { font-size: 22px; color: #e91e63; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #f8bbd0; }
@@ -41,20 +36,28 @@
 </head>
 <body>
 
-<div class="cover">
-  <div style="font-size:60px;margin-bottom:15px;">👩‍🍼</div>
-  <h1>SMART KIA HOBA KALLA</h1>
-  <div class="subtitle">Sistem Informasi Kesehatan Ibu dan Anak</div>
-  <div class="tagline">"Ibu Sehat, Bayi Kuat, Keluarga Bahagia ♥"</div>
-  <div class="box">
-    <h3 style="color:white;border:none;margin:0;">PANDUAN LENGKAP PENGGUNAAN</h3>
-    <p style="color:white;opacity:0.9;">Versi 1.0 — September 2026</p>
-  </div>
-  <div class="info">
-    <p>Website: https://smart-kia-hobakala.vercel.app</p>
-    <p>Dikembangkan untuk Posyandu Hoba Kalla</p>
-  </div>
-</div>
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="page-break-after:always;">
+  <tr><td style="background-color:#880e4f;height:30px;"></td></tr>
+  <tr><td style="background-color:#880e4f;height:60px;">&nbsp;</td></tr>
+  <tr><td style="background-color:#e91e63;padding:0;text-align:center;">
+    <h1 style="font-size:34px;color:white;margin:0;font-family:'Segoe UI',Tahoma,sans-serif;">SMART KIA HOBA KALLA</h1>
+  </td></tr>
+  <tr><td style="background-color:#e91e63;padding:4px 0 2px;text-align:center;">
+    <p style="font-size:16px;color:white;margin:0;font-family:'Segoe UI',Tahoma,sans-serif;">Sistem Informasi Kesehatan Ibu dan Anak</p>
+  </td></tr>
+  <tr><td style="background-color:#e91e63;padding:8px 0 20px;text-align:center;">
+    <p style="font-size:13px;color:white;margin:0;font-style:italic;font-family:'Segoe UI',Tahoma,sans-serif;">&ldquo;Ibu Sehat, Bayi Kuat, Keluarga Bahagia&rdquo;</p>
+  </td></tr>
+  <tr><td style="background-color:#f06292;padding:12px 30px;text-align:center;">
+    <p style="font-size:18px;color:white;margin:0;font-weight:bold;font-family:'Segoe UI',Tahoma,sans-serif;">PANDUAN LENGKAP PENGGUNAAN</p>
+    <p style="font-size:12px;color:white;margin:4px 0 0;font-family:'Segoe UI',Tahoma,sans-serif;">Versi 1.0 &mdash; September 2026</p>
+  </td></tr>
+  <tr><td style="background-color:#f8bbd0;padding:30px 30px 20px;text-align:center;">
+    <p style="font-size:13px;color:#880e4f;margin:0;font-family:'Segoe UI',Tahoma,sans-serif;">Website: https://smart-kia-hobakala.vercel.app</p>
+    <p style="font-size:12px;color:#880e4f;margin:6px 0 0;font-family:'Segoe UI',Tahoma,sans-serif;">Dikembangkan untuk Posyandu Hoba Kalla</p>
+  </td></tr>
+  <tr><td style="background-color:#f8bbd0;height:200px;">&nbsp;</td></tr>
+</table>
 
 <div class="toc">
   <h2>Daftar Isi</h2>
