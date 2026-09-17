@@ -228,7 +228,7 @@ function getRows_(module) {
   const sh = getSS_().getSheetByName(module);
   const lastRow = sh.getLastRow();
   if (lastRow < 2) return [];
-  const values = sh.getRange(2,1,lastRow-1,sh.getLastColumn()).getDisplayValues();
+  const values = sh.getRange(2,1,lastRow-1,sh.getLastColumn()).getValues();
   const headers = ['ID','Waktu Input'].concat(SHEETS[module]);
   return values.map(row => {
     const obj = {};

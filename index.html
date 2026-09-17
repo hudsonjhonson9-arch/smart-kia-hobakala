@@ -455,7 +455,7 @@ function doLogin(){
       currentUser=r.username;
       currentRole=r.role||'user';
       currentNama=r.nama||r.username;
-      try{localStorage.setItem('kia_user',r.username);localStorage.setItem('kia_role',currentRole);localStorage.setItem('kia_nama',currentNama);}catch(e){}
+      try{localStorage.setItem('kia_user',r.username);localStorage.setItem('kia_role',currentRole);localStorage.setItem('kia_nama',currentNama);localStorage.removeItem('kia_dash_cache');}catch(e){}
       document.getElementById('loginWrap').style.display='none';
       document.getElementById('appWrap').classList.add('show');
       applyRoleVisibility();
@@ -467,7 +467,7 @@ function doLogin(){
 }
 function doLogout(){
   currentUser='';currentRole='';currentNama='';currentView='';
-  try{localStorage.removeItem('kia_user');localStorage.removeItem('kia_role');localStorage.removeItem('kia_nama');localStorage.removeItem('kia_page');}catch(e){}
+  try{localStorage.removeItem('kia_user');localStorage.removeItem('kia_role');localStorage.removeItem('kia_nama');localStorage.removeItem('kia_page');localStorage.removeItem('kia_dash_cache');}catch(e){}
   document.getElementById('appWrap').classList.remove('show');
   document.getElementById('loginWrap').style.display='flex';
 }
@@ -555,7 +555,9 @@ function doSearch(){
   if(!q){showDashboard();return;}
   gv(function(r){
     if(!r||!r.length){alert('Data tidak ditemukan');return;}
-    renderPasienData({rows:r,query:q,moduleName:'Pencarian: '+q,labels:['No RM','Nama','Usia','Status']});
+    var el=document.getElementById('mainContent');
+    el.innerHTML='<div class="topbar"><div style="font-size:20px;color:#9d174d;font-weight:600;">&#x1F50D; Pencarian: '+q+'</div></div><div class="module-view"><div class="module-table" id="tableArea"></div></div>';
+    renderPasienData({rows:r,labels:['No RM','Nama Ibu','Umur','Alamat/Desa'],type:'search'});
   },'searchPatient',q);
 }
 function showDashboard(){
@@ -655,7 +657,7 @@ function toggleForm(type){
   var f=document.getElementById('formArea');
   f.style.display=f.style.display==='none'?'block':'none';
 }
-function clearCache(){try{localStorage.removeItem('kia_dash_cache');}catch(e){}}
+function clearCache(){try{localStorage.removeItem('kia_dash_cache');localStorage.removeItem('kia_page');}catch(e){}}
 function saveModule(ev,type){
   ev.preventDefault();
   var form=document.getElementById('moduleForm');
@@ -701,15 +703,20 @@ function deleteRow(type,idx){
 }
 function renderPasienData(d){
   var el=document.getElementById('tableArea');
+  if(!el){return;}
   if(!d.rows||!d.rows.length){el.innerHTML='<div class="empty">Belum ada data</div>';return;}
   var labels=d.labels||[];
   var html='<table><thead><tr><th>No</th>';
   labels.forEach(function(l){html+='<th>'+l+'</th>';});
-  html+='<th>Aksi</th></tr></thead><tbody>';
+  if(d.type!=='search')html+='<th>Aksi</th>';
+  html+='</tr></thead><tbody>';
   d.rows.forEach(function(r,i){
     html+='<tr><td>'+(i+1)+'</td>';
     for(var j=0;j<labels.length;j++){html+='<td>'+(Array.isArray(r)?r[j]:(r[labels[j]]||''))+'</td>';}
-    html+='<td><div class="actions-cell"><button class="btn btn-primary" onclick="editRow(\''+d.type+'\','+i+',window._lastData)">Edit</button><button class="btn btn-danger" onclick="deleteRow(\''+d.type+'\','+i+')">Hapus</button></div></td></tr>';
+    if(d.type!=='search'){
+      html+='<td><div class="actions-cell"><button class="btn btn-primary" onclick="editRow(\''+d.type+'\','+i+',window._lastData)">Edit</button><button class="btn btn-danger" onclick="deleteRow(\''+d.type+'\','+i+')">Hapus</button></div></td>';
+    }
+    html+='</tr>';
   });
   html+='</tbody></table>';
   el.innerHTML=html;
