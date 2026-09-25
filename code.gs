@@ -120,7 +120,7 @@ function setupSheets_() {
       if (!aligned) {
         sh.getRange(1,1,1,needed.length).setValues([needed]);
         sh.getRange(1,1,1,needed.length).setFontWeight('bold').setBackground('#ffd8e5');
-        if (lastCol > needed.length) sh.getRange(1, needed.length+1, 1, lastCol-needed.length).clearContent();
+        if (lastCol > needed.length) sh.getRange(1, needed.length+1, 1, lastCol-needed.length).clear();
       }
     }
   });
