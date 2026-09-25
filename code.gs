@@ -80,7 +80,8 @@ function doGet(e) {
       getBarcodeData: function(){return getBarcodeData(args[0]);},
       getModuleSummary: function(){return getModuleSummary();},
       getMonthlyStats: function(){return getMonthlyStats();},
-      getFullDashboard: function(){return getFullDashboard();}
+      getFullDashboard: function(){return getFullDashboard();},
+      deleteActivity: function(){return deleteActivity(args[0]);}
     };
     if (!fn[action]) throw new Error('Action tidak dikenal: ' + action);
     var result = fn[action]();
@@ -575,6 +576,20 @@ function getActivityLog() {
   return log.getRange(2, 1, last - 1, 4).getDisplayValues().reverse().slice(0, 50);
 }
 
+// delete log rows whose Waktu display value (dd/MM/yyyy HH:mm:ss) is in the list
+function deleteActivity(waktus) {
+  if (!Array.isArray(waktus)) waktus = [waktus];
+  const log = getSS_().getSheetByName('Aktivitas');
+  const last = log.getLastRow();
+  if (last < 2) return {ok:true, deleted:0};
+  const times = log.getRange(2, 1, last - 1, 1).getDisplayValues();
+  let deleted = 0;
+  for (let i = times.length - 1; i >= 0; i--) {
+    if (waktus.indexOf(String(times[i][0])) !== -1) { log.deleteRow(i + 2); deleted++; }
+  }
+  return {ok:true, deleted:deleted};
+}
+
 function getMonitoringData() {
   setupSheets_();
   const cache = {};
@@ -638,10 +653,15 @@ function syncMonitoring_(monthlyStats, totals) {
   });
   rows.push(['Rekap', year, totals.totalKIA, totals.totalKB,
     totals.dataLengkap, totals.dataBelumLengkap, totals.dataIbu, totals.dataBayi, '']);
+  // skip the rewrite when nothing changed — the sheet writes are what made this page slow
+  const props = PropertiesService.getScriptProperties();
+  const sig = JSON.stringify(rows);
+  if (props.getProperty('monitoringSig') === sig) return;
   const lastRow = sh.getLastRow();
   if (lastRow > 1) sh.deleteRows(2, lastRow - 1);
   const width = 2 + SHEETS.monitoring.length;
   sh.getRange(2, 1, rows.length, width).setValues(rows.map(r => ['', new Date()].concat(r)));
+  props.setProperty('monitoringSig', sig);
 }
 
 // ===== EXPORT =====
