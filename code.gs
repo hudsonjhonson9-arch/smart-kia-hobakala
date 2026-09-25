@@ -111,13 +111,16 @@ function setupSheets_() {
         .setFontWeight('bold')
         .setBackground('#ffd8e5');
     } else {
-      const existing = sh.getRange(1,1,1,sh.getLastColumn()).getValues()[0];
+      // ponytail: header row must match SHEETS order exactly, otherwise data
+      // (written in SHEETS order) sits under the wrong labels. Rewrite in place.
       const needed = ['ID','Waktu Input'].concat(SHEETS[name]);
-      const missing = needed.filter(h => !existing.includes(h));
-      if (missing.length > 0) {
-        const nextCol = sh.getLastColumn() + 1;
-        sh.getRange(1, nextCol, 1, missing.length).setValues([missing]);
-        sh.getRange(1, nextCol, 1, missing.length).setFontWeight('bold').setBackground('#ffd8e5');
+      const lastCol = sh.getLastColumn();
+      const existing = sh.getRange(1,1,1,lastCol).getValues()[0];
+      const aligned = lastCol === needed.length && needed.every((h,i) => String(existing[i]) === h);
+      if (!aligned) {
+        sh.getRange(1,1,1,needed.length).setValues([needed]);
+        sh.getRange(1,1,1,needed.length).setFontWeight('bold').setBackground('#ffd8e5');
+        if (lastCol > needed.length) sh.getRange(1, needed.length+1, 1, lastCol-needed.length).clearContent();
       }
     }
   });
@@ -601,6 +604,15 @@ function getMonitoringData() {
     else dataBelumLengkap++;
   });
 
+  const monthlyStats = getMonthlyStats();
+  try {
+    syncMonitoring_(monthlyStats, {
+      totalKIA: totalKIA, totalKB: totalKB,
+      dataLengkap: dataLengkap, dataBelumLengkap: dataBelumLengkap,
+      dataIbu: pasienRows.length, dataBayi: bayiRows.length
+    });
+  } catch (e) {}
+
   return {
     counts: counts,
     totalKIA: totalKIA,
@@ -609,8 +621,27 @@ function getMonitoringData() {
     dataBelumLengkap: dataBelumLengkap,
     dataIbu: pasienRows.length,
     dataBayi: bayiRows.length,
-    monthlyStats: getMonthlyStats()
+    monthlyStats: monthlyStats
   };
+}
+
+// ponytail: monitoring sheet is a derived report, refreshed when the Monitoring page opens.
+// Monthly rows = activity that month; kelengkapan columns live on the Rekap row.
+function syncMonitoring_(monthlyStats, totals) {
+  const sh = getSS_().getSheetByName('monitoring');
+  if (!sh) return;
+  const year = new Date().getFullYear();
+  const rows = Object.keys(monthlyStats).map(m => {
+    const s = monthlyStats[m] || {};
+    const kia = (s.anc || 0) + (s.persalinan || 0) + (s.nifas || 0) + (s.bayi || 0);
+    return [m, year, kia, s.kb || 0, '', '', '', '', ''];
+  });
+  rows.push(['Rekap', year, totals.totalKIA, totals.totalKB,
+    totals.dataLengkap, totals.dataBelumLengkap, totals.dataIbu, totals.dataBayi, '']);
+  const lastRow = sh.getLastRow();
+  if (lastRow > 1) sh.deleteRows(2, lastRow - 1);
+  const width = 2 + SHEETS.monitoring.length;
+  sh.getRange(2, 1, rows.length, width).setValues(rows.map(r => ['', new Date()].concat(r)));
 }
 
 // ===== EXPORT =====
