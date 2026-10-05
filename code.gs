@@ -297,6 +297,10 @@ function getDashboard() {
     const d = new Date(r['Tanggal Kunjungan Nifas'] || r['Waktu Input']);
     if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
   });
+  rows('kb').forEach(r => {
+    const d = new Date(r['Tanggal Pelayanan'] || r['Waktu Input']);
+    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+  });
   rows('bayi').forEach(r => {
     const d = new Date(r['Tanggal Lahir'] || r['Waktu Input']);
     if (!isNaN(d) && d.getFullYear() === thisYear) monthlyBayi[d.getMonth()]++;
@@ -389,6 +393,10 @@ function getFullDashboard() {
   });
   nifasRows.forEach(r => {
     const d = new Date(r['Tanggal Kunjungan Nifas'] || r['Waktu Input']);
+    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+  });
+  kbRows.forEach(r => {
+    const d = new Date(r['Tanggal Pelayanan'] || r['Waktu Input']);
     if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
   });
   bayiRows.forEach(r => {
