@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <base target="_top">
@@ -6,6 +6,8 @@
   <title>SMART-KIA</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
     body{background:#fdf2f8;color:#1e293b;min-height:100vh;}
@@ -113,6 +115,9 @@
     .empty{text-align:center;padding:24px;color:#94a3b8;font-size:13px;}
     .actions-cell{display:flex;gap:4px;}
     .actions-cell button{border:0;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;}
+    .kl-cell{cursor:pointer;text-align:center;position:relative;transition:background .15s;}
+    .kl-cell:hover{background:#fdf2f8;}
+    .kl-manual::after{content:"*";position:absolute;top:2px;right:6px;font-size:11px;color:#be185d;font-weight:700;}
     .monitoring-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
     .mon-card{border-radius:14px;padding:18px;color:#fff;}
     .mon-card.pink{background:linear-gradient(135deg,#ec4899,#f472b6);}
@@ -534,11 +539,12 @@ function renderDashboard(d){
   }
   if(d.kelengkapan&&d.kelengkapan.length){
     var kb=document.getElementById('kelengkapanBody');
+    var klHtml='';
     d.kelengkapan.forEach(function(p,i){
-      var check='<span style="color:#059669;font-weight:700;">&#x2714;</span>';
-      var cross='<span style="color:#dc2626;font-weight:700;">&#x2718;</span>';
-      kb.innerHTML+='<tr><td>'+(i+1)+'</td><td>'+p.noRM+'</td><td>'+p.nama+'</td><td>'+(p.anc?check:cross)+'</td><td>'+(p.persalinan?check:cross)+'</td><td>'+(p.nifas?check:cross)+'</td><td>'+(p.bayi?check:cross)+'</td><td>'+(p.kb?check:cross)+'</td></tr>';
+      klHtml+='<tr><td>'+(i+1)+'</td><td>'+p.noRM+'</td><td>'+p.nama+'</td>'+
+        ['anc','persalinan','nifas','bayi','kb'].map(function(m){return klCell(p,m);}).join('')+'</tr>';
     });
+    kb.innerHTML=klHtml;
   }
   if(d.monthlyLabels){
     setTimeout(function(){
@@ -748,9 +754,18 @@ function openUtility(type){
     el.innerHTML=`<div class="topbar"><div style="font-size:20px;color:#9d174d;font-weight:600;">&#x1F4CB; Laporan & Cetak</div></div>
     <div class="module-view">
       <h2 style="margin-bottom:16px;">&#x1F4CB; Laporan Data KIA</h2>
-      <div style="margin-bottom:14px;display:flex;gap:8px;">
+      <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <select id="pdfJenis" style="padding:9px 12px;border:1px solid #f9a8d4;border-radius:8px;font-size:13px;background:#fff;">
+          <option value="rekap">Rekapitulasi (ringkasan, statistik bulanan, kelengkapan)</option>
+          <option value="pasien">Data Pasien</option>
+          <option value="anc">Data ANC</option>
+          <option value="persalinan">Data Persalinan</option>
+          <option value="nifas">Data Nifas</option>
+          <option value="bayi">Data Bayi</option>
+          <option value="kb">Data KB</option>
+        </select>
+        <button class="btn btn-danger" onclick="exportPDF()">&#x1F4C4; Unduh PDF (Landscape)</button>
         <button class="btn btn-success" onclick="exportExcel()">&#x1F4CA; Export Excel</button>
-        <button class="btn btn-danger" onclick="exportPDF()">&#x1F4C4; Export PDF</button>
       </div>
       <div style="padding:14px;background:#fdf2f8;border-radius:10px;font-size:13px;">
         <b>Ringkasan Laporan:</b>
@@ -1044,12 +1059,189 @@ function exportExcel(){
     if(r&&r.url){window.open(r.url,'_blank');}else{alert('Gagal export');}
   },'exportToExcel',mod);
 }
-function exportPDF(){
-  var mod=prompt('Export modul apa? (pasien/anc/persalinan/nifas/bayi/kb)','pasien');
-  if(!mod)return;
+function klMark(on){return on?'<span style="color:#059669;font-weight:700;">&#x2714;</span>':'<span style="color:#dc2626;font-weight:700;">&#x2718;</span>';}
+function klCell(p,m){
+  var on=!!p[m],manual=!!(p.manual&&p.manual[m]);
+  return '<td class="kl-cell'+(manual?' kl-manual':'')+'" data-id="'+(p.id||'')+'" data-m="'+m+'" data-v="'+(on?1:0)+'" data-nama="'+String(p.nama||'').replace(/"/g,'&quot;')+'" title="Klik untuk mengubah ceklist'+(manual?' (diatur manual)':'')+'" onclick="toggleKelengkapan(this)">'+klMark(on)+'</td>';
+}
+function toggleKelengkapan(td){
+  var id=td.getAttribute('data-id'),m=td.getAttribute('data-m'),cur=td.getAttribute('data-v')==='1';
+  if(!id){try{localStorage.removeItem('kia_dash_cache');}catch(e){}alert('Data dashboard belum diperbarui. Muat ulang halaman lalu coba lagi.');return;}
+  var label={anc:'ANC',persalinan:'Persalinan',nifas:'Nifas',bayi:'Bayi',kb:'KB'}[m];
+  if(!confirm((cur?'Hapus':'Beri')+' ceklist '+label+' untuk '+td.getAttribute('data-nama')+'?'))return;
   gv(function(r){
-    if(r&&r.url){window.open(r.url,'_blank');}else{alert('Gagal export');}
-  },'exportToPDF',mod);
+    if(r&&r.ok){
+      td.setAttribute('data-v',r.value?'1':'0');
+      td.innerHTML=klMark(r.value);
+      td.classList.toggle('kl-manual',!!r.manual);
+      try{localStorage.removeItem('kia_dash_cache');}catch(e){}
+    }else{alert((r&&r.message)||'Gagal mengubah ceklist');}
+  },'setKelengkapan',id,m,!cur,currentUser);
+}
+
+/* ===== PDF langsung unduh (tanpa pop up, otomatis landscape) ===== */
+var PDF_JUDUL={rekap:'Rekapitulasi Laporan KIA & KB',pasien:'Laporan Data Pasien',anc:'Laporan Data ANC',persalinan:'Laporan Data Persalinan',nifas:'Laporan Data Nifas',bayi:'Laporan Data Bayi',kb:'Laporan Data KB'};
+var PDF_BULAN=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function pdf2(n){return ('0'+n).slice(-2);}
+function pdfNow(){var d=new Date();return d.getDate()+' '+PDF_BULAN[d.getMonth()]+' '+d.getFullYear()+', '+pdf2(d.getHours())+':'+pdf2(d.getMinutes())+' WITA';}
+function pdfFmtVal(key,v){
+  if(v===null||v===undefined||v==='')return '-';
+  if(typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(v)){
+    var dt=new Date(v);
+    if(!isNaN(dt)){
+      var s=pdf2(dt.getDate())+'/'+pdf2(dt.getMonth()+1)+'/'+dt.getFullYear();
+      if(key==='Waktu Input')s+=' '+pdf2(dt.getHours())+':'+pdf2(dt.getMinutes());
+      return s;
+    }
+  }
+  return String(v);
+}
+function pdfNewDoc(){
+  var J=window.jspdf.jsPDF;
+  return new J({orientation:'landscape',unit:'mm',format:'a4'});
+}
+function pdfFinalize(doc,judul,sub,fileName){
+  var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),n=doc.getNumberOfPages();
+  var who=(typeof currentNama!=='undefined'&&currentNama)||currentUser||'-';
+  for(var i=1;i<=n;i++){
+    doc.setPage(i);
+    doc.setFillColor(190,24,93);doc.rect(0,0,W,22,'F');
+    doc.setFillColor(244,114,182);doc.rect(0,22,W,1.2,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('SMART KIA',14,10);
+    doc.setFont('helvetica','normal');doc.setFontSize(10);doc.text(judul,14,17);
+    doc.setFontSize(8.5);
+    doc.text('Dicetak: '+pdfNow()+' | oleh '+who,W-14,10,{align:'right'});
+    if(sub)doc.text(sub,W-14,17,{align:'right'});
+    doc.setDrawColor(244,200,220);doc.setLineWidth(0.3);doc.line(14,H-10,W-14,H-10);
+    doc.setTextColor(100,116,139);doc.setFontSize(8);
+    doc.text('SMART KIA - Sistem Informasi Kesehatan Ibu & Anak',14,H-6);
+    doc.text('Halaman '+i+' dari '+n,W-14,H-6,{align:'right'});
+  }
+  doc.save(fileName);
+}
+function pdfFileName(jenis){var d=new Date();return 'Laporan_KIA_'+jenis+'_'+d.getFullYear()+'-'+pdf2(d.getMonth()+1)+'-'+pdf2(d.getDate())+'.pdf';}
+function buildRekapPdf(mon,kel){
+  var doc=pdfNewDoc();
+  var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
+  var tahun=new Date().getFullYear();
+  var y=30;
+  var cards=[['Total KIA',mon.totalKIA],['Total KB',mon.totalKB],['Data Lengkap',mon.dataLengkap],['Belum Lengkap',mon.dataBelumLengkap],['Data Ibu',mon.dataIbu],['Data Bayi',mon.dataBayi]];
+  var gap=4,cw=(W-28-gap*5)/6;
+  cards.forEach(function(c,i){
+    var x=14+i*(cw+gap);
+    doc.setFillColor(253,242,248);doc.setDrawColor(249,168,212);doc.setLineWidth(0.3);
+    doc.roundedRect(x,y,cw,20,2,2,'FD');
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,116,139);
+    doc.text(c[0],x+cw/2,y+7,{align:'center'});
+    doc.setFont('helvetica','bold');doc.setFontSize(17);doc.setTextColor(157,23,77);
+    doc.text(String(c[1]||0),x+cw/2,y+16.5,{align:'center'});
+  });
+  y+=29;
+  doc.setTextColor(157,23,77);doc.setFont('helvetica','bold');doc.setFontSize(11);
+  doc.text('Statistik per Bulan ('+tahun+')',14,y);
+  var ms=mon.monthlyStats||{},tot={anc:0,persalinan:0,nifas:0,bayi:0,kb:0};
+  var body=Object.keys(ms).map(function(k){
+    var s=ms[k]||{};
+    ['anc','persalinan','nifas','bayi','kb'].forEach(function(f){tot[f]+=(s[f]||0);});
+    var jml=(s.anc||0)+(s.persalinan||0)+(s.nifas||0)+(s.bayi||0)+(s.kb||0);
+    return [k,s.anc||0,s.persalinan||0,s.nifas||0,s.bayi||0,s.kb||0,jml];
+  });
+  var totAll=tot.anc+tot.persalinan+tot.nifas+tot.bayi+tot.kb;
+  doc.autoTable({
+    startY:y+3,
+    head:[['Bulan','ANC','Persalinan','Nifas','Bayi','KB','Jumlah']],
+    body:body,
+    foot:[['Total',tot.anc,tot.persalinan,tot.nifas,tot.bayi,tot.kb,totAll]],
+    theme:'grid',
+    styles:{fontSize:8.5,cellPadding:1.8,lineColor:[244,200,220],lineWidth:0.1},
+    headStyles:{fillColor:[190,24,93],textColor:255,halign:'center'},
+    bodyStyles:{halign:'center'},
+    footStyles:{fillColor:[253,242,248],textColor:[157,23,77],fontStyle:'bold',halign:'center'},
+    columnStyles:{0:{halign:'left',fontStyle:'bold'}},
+    alternateRowStyles:{fillColor:[255,250,252]},
+    margin:{top:28,bottom:16,left:14,right:14}
+  });
+  y=doc.lastAutoTable.finalY+10;
+  if(y>H-45){doc.addPage();y=30;}
+  doc.setTextColor(157,23,77);doc.setFont('helvetica','bold');doc.setFontSize(11);
+  doc.text('Kelengkapan Register',14,y);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,116,139);
+  doc.text('Ada = data sudah tercatat | Belum = data belum ada',W-14,y,{align:'right'});
+  var kb=(kel||[]).map(function(p,i){
+    return [i+1,p.noRM||'-',p.nama||'-',p.anc?'Ada':'Belum',p.persalinan?'Ada':'Belum',p.nifas?'Ada':'Belum',p.bayi?'Ada':'Belum',p.kb?'Ada':'Belum'];
+  });
+  if(!kb.length)kb=[['','','Belum ada data pasien','','','','','']];
+  doc.autoTable({
+    startY:y+3,
+    head:[['No','No RM','Nama','ANC','Persalinan','Nifas','Bayi','KB']],
+    body:kb,
+    theme:'grid',
+    styles:{fontSize:8.5,cellPadding:1.8,lineColor:[244,200,220],lineWidth:0.1},
+    headStyles:{fillColor:[190,24,93],textColor:255,halign:'center'},
+    columnStyles:{0:{halign:'center',cellWidth:12},1:{cellWidth:34},3:{halign:'center'},4:{halign:'center'},5:{halign:'center'},6:{halign:'center'},7:{halign:'center'}},
+    didParseCell:function(h){
+      if(h.section==='body'&&h.column.index>=3){
+        if(h.cell.raw==='Ada'){h.cell.styles.textColor=[5,150,105];h.cell.styles.fillColor=[236,253,245];h.cell.styles.fontStyle='bold';}
+        else if(h.cell.raw==='Belum'){h.cell.styles.textColor=[220,38,38];h.cell.styles.fillColor=[254,242,242];}
+      }
+    },
+    margin:{top:28,bottom:16,left:14,right:14}
+  });
+  pdfFinalize(doc,PDF_JUDUL.rekap,'Tahun '+tahun,pdfFileName('rekap'));
+}
+function buildModulePdf(jenis,rows){
+  var doc=pdfNewDoc();
+  var W=doc.internal.pageSize.getWidth();
+  if(!rows||!rows.length){
+    doc.setTextColor(100,116,139);doc.setFont('helvetica','normal');doc.setFontSize(11);
+    doc.text('Belum ada data untuk dilaporkan.',W/2,60,{align:'center'});
+    pdfFinalize(doc,PDF_JUDUL[jenis],'Jumlah data: 0',pdfFileName(jenis));
+    return;
+  }
+  var keys=Object.keys(rows[0]).filter(function(k){return k!=='ID';});
+  var head=[['No'].concat(keys)];
+  var body=rows.map(function(r,i){return [i+1].concat(keys.map(function(k){return pdfFmtVal(k,r[k]);}));});
+  var colStyles={0:{cellWidth:9,halign:'center'}};
+  keys.forEach(function(k,ci){
+    var mx=0;
+    body.forEach(function(b){var l=String(b[ci+1]).length;if(l>mx)mx=l;});
+    var hw=0;k.split(/\s+/).forEach(function(w){if(w.length>hw)hw=w.length;});
+    var w=Math.min(48,Math.max(15,Math.min(mx,32)*1.35+4,hw*1.5+4));
+    colStyles[ci+1]={cellWidth:w};
+  });
+  var repeat=[0];
+  var iRM=keys.indexOf('No RM');if(iRM>=0)repeat.push(iRM+1);
+  var iNama=-1;keys.forEach(function(k,i){if(iNama<0&&/^Nama/.test(k))iNama=i;});
+  if(iNama>=0&&repeat.indexOf(iNama+1)<0)repeat.push(iNama+1);
+  doc.autoTable({
+    startY:28,
+    head:head,
+    body:body,
+    theme:'grid',
+    horizontalPageBreak:true,
+    horizontalPageBreakRepeat:repeat,
+    showHead:'everyPage',
+    styles:{fontSize:7,cellPadding:1.5,overflow:'linebreak',valign:'middle',lineColor:[244,200,220],lineWidth:0.1},
+    headStyles:{fillColor:[190,24,93],textColor:255,halign:'center',fontSize:7},
+    alternateRowStyles:{fillColor:[255,250,252]},
+    columnStyles:colStyles,
+    margin:{top:28,bottom:16,left:14,right:14}
+  });
+  pdfFinalize(doc,PDF_JUDUL[jenis],'Jumlah data: '+rows.length,pdfFileName(jenis));
+}
+function exportPDF(){
+  var sel=document.getElementById('pdfJenis');
+  var jenis=sel?sel.value:'rekap';
+  if(!window.jspdf||!window.jspdf.jsPDF){alert('Library PDF belum termuat. Periksa koneksi internet lalu muat ulang halaman.');return;}
+  function safe(fn){return function(){try{fn.apply(null,arguments);}catch(e){console.error(e);alert('Gagal membuat PDF: '+e.message);}};}
+  if(jenis==='rekap'){
+    gv(function(mon){
+      gv(safe(function(kel){buildRekapPdf(mon||{},kel||[]);}),'getKelengkapanData');
+    },'getMonitoringData');
+  }else{
+    gv(safe(function(rows){buildModulePdf(jenis,Array.isArray(rows)?rows:[]);}),'getData',jenis);
+  }
 }
 function generateBarcode(){
   var v=document.getElementById('barcodeInput').value.trim();
@@ -1095,4 +1287,3 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 </body></html>
-
