@@ -1257,13 +1257,19 @@ function pdfFinalize(doc,judul,sub,fileName){
   }
   doc.save(fileName);
 }
-function pdfFileName(jenis){var d=new Date();return 'Laporan_KIA_'+jenis+'_'+d.getFullYear()+'-'+pdf2(d.getMonth()+1)+'-'+pdf2(d.getDate())+'.pdf';}
-function buildRekapPdf(mon,kel){
+function pdfFileName(jenis,slug){return 'Laporan_KIA_'+jenis+'_'+(slug||periodeSlug(new Date().getFullYear(),0))+'.pdf';}
+function buildRekapDoc(mon,kel,modulRows,tahun,bulan){
+  mon=mon||{};
   var doc=pdfNewDoc();
   var W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight();
-  var tahun=new Date().getFullYear();
   var y=30;
-  var cards=[['Total KIA',mon.totalKIA],['Total KB',mon.totalKB],['Data Lengkap',mon.dataLengkap],['Belum Lengkap',mon.dataBelumLengkap],['Data Ibu',mon.dataIbu],['Data Bayi',mon.dataBayi]];
+  var cards;
+  if(modulRows){
+    var n=function(k){return (modulRows[k]||[]).length;};
+    cards=[['Total KIA',n('anc')+n('persalinan')+n('nifas')+n('bayi')],['Total KB',n('kb')],['Data Lengkap',mon.dataLengkap],['Belum Lengkap',mon.dataBelumLengkap],['Data Ibu',n('pasien')],['Data Bayi',n('bayi')]];
+  }else{
+    cards=[['Total KIA',mon.totalKIA],['Total KB',mon.totalKB],['Data Lengkap',mon.dataLengkap],['Belum Lengkap',mon.dataBelumLengkap],['Data Ibu',mon.dataIbu],['Data Bayi',mon.dataBayi]];
+  }
   var gap=4,cw=(W-28-gap*5)/6;
   cards.forEach(function(c,i){
     var x=14+i*(cw+gap);
@@ -1276,8 +1282,25 @@ function buildRekapPdf(mon,kel){
   });
   y+=29;
   doc.setTextColor(157,23,77);doc.setFont('helvetica','bold');doc.setFontSize(11);
-  doc.text('Statistik per Bulan ('+tahun+')',14,y);
-  var ms=mon.monthlyStats||{},tot={anc:0,persalinan:0,nifas:0,bayi:0,kb:0};
+  doc.text('Statistik per Bulan ('+(tahun||new Date().getFullYear())+')',14,y);
+  var ms;
+  if(modulRows){
+    ms={};
+    var months=[],mi;
+    if(bulan&&bulan>0){months=[bulan];}else{for(mi=1;mi<=12;mi++)months.push(mi);}
+    months.forEach(function(m){ms[PDF_BULAN[m-1]]={anc:0,persalinan:0,nifas:0,bayi:0,kb:0};});
+    ['anc','persalinan','nifas','bayi','kb'].forEach(function(mod){
+      (modulRows[mod]||[]).forEach(function(r){
+        var p=rowPeriod(r,mod);
+        if(!p)return;
+        var s=ms[PDF_BULAN[p.m]];
+        if(s)s[mod]++;
+      });
+    });
+  }else{
+    ms=mon.monthlyStats||{};
+  }
+  var tot={anc:0,persalinan:0,nifas:0,bayi:0,kb:0};
   var body=Object.keys(ms).map(function(k){
     var s=ms[k]||{};
     ['anc','persalinan','nifas','bayi','kb'].forEach(function(f){tot[f]+=(s[f]||0);});
@@ -1325,17 +1348,14 @@ function buildRekapPdf(mon,kel){
     },
     margin:{top:28,bottom:16,left:14,right:14}
   });
-  pdfFinalize(doc,PDF_JUDUL.rekap,'Tahun '+tahun,pdfFileName('rekap'));
+  return doc;
 }
-function buildModulePdf(jenis,rows){
-  var doc=pdfNewDoc();
+function pdfModuleEmptyText(doc,y){
   var W=doc.internal.pageSize.getWidth();
-  if(!rows||!rows.length){
-    doc.setTextColor(100,116,139);doc.setFont('helvetica','normal');doc.setFontSize(11);
-    doc.text('Belum ada data untuk dilaporkan.',W/2,60,{align:'center'});
-    pdfFinalize(doc,PDF_JUDUL[jenis],'Jumlah data: 0',pdfFileName(jenis));
-    return;
-  }
+  doc.setTextColor(100,116,139);doc.setFont('helvetica','normal');doc.setFontSize(11);
+  doc.text('Belum ada data untuk dilaporkan.',W/2,y||60,{align:'center'});
+}
+function pdfModuleTable(doc,rows,startY){
   var keys=Object.keys(rows[0]).filter(function(k){return k!=='ID';});
   var head=[['No'].concat(keys)];
   var body=rows.map(function(r,i){return [i+1].concat(keys.map(function(k){return pdfFmtVal(k,r[k]);}));});
@@ -1352,7 +1372,7 @@ function buildModulePdf(jenis,rows){
   var iNama=-1;keys.forEach(function(k,i){if(iNama<0&&/^Nama/.test(k))iNama=i;});
   if(iNama>=0&&repeat.indexOf(iNama+1)<0)repeat.push(iNama+1);
   doc.autoTable({
-    startY:28,
+    startY:startY,
     head:head,
     body:body,
     theme:'grid',
@@ -1365,20 +1385,45 @@ function buildModulePdf(jenis,rows){
     columnStyles:colStyles,
     margin:{top:28,bottom:16,left:14,right:14}
   });
-  pdfFinalize(doc,PDF_JUDUL[jenis],'Jumlah data: '+rows.length,pdfFileName(jenis));
+}
+function buildModuleDoc(jenis,rows,tahun,bulan){
+  var doc=pdfNewDoc();
+  if(!rows||!rows.length){pdfModuleEmptyText(doc,60);return doc;}
+  pdfModuleTable(doc,rows,28);
+  return doc;
+}
+function pdfAppendModuleDoc(doc,jenis,rows){
+  doc.addPage();
+  var W=doc.internal.pageSize.getWidth();
+  var y=30;
+  doc.setTextColor(157,23,77);doc.setFont('helvetica','bold');doc.setFontSize(12);
+  doc.text(PDF_JUDUL[jenis],14,y);
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(100,116,139);
+  doc.text('Jumlah data: '+((rows&&rows.length)||0),W-14,y,{align:'right'});
+  if(!rows||!rows.length){pdfModuleEmptyText(doc,y+20);return;}
+  pdfModuleTable(doc,rows,y+6);
+}
+function buildSemuaPdf(modulRows,mon,kel,tahun,bulan){
+  var doc=buildRekapDoc(mon,kel,modulRows,tahun,bulan);
+  ['pasien','anc','persalinan','nifas','bayi','kb'].forEach(function(m){pdfAppendModuleDoc(doc,m,modulRows[m]||[]);});
+  pdfFinalize(doc,PDF_JUDUL.rekap+' + Detail','Periode: '+periodeLabel(tahun,bulan),pdfFileName('semua',periodeSlug(tahun,bulan)));
 }
 function exportPDF(){
-  var sel=document.getElementById('pdfJenis');
-  var jenis=sel?sel.value:'rekap';
   if(!window.jspdf||!window.jspdf.jsPDF){alert('Library PDF belum termuat. Periksa koneksi internet lalu muat ulang halaman.');return;}
+  if(!lapData.ready){alert('Data belum selesai dimuat, tunggu sebentar.');return;}
+  var t=lapState.tahun,b=lapState.bulan,tab=lapState.tab||'semua';
   function safe(fn){return function(){try{fn.apply(null,arguments);}catch(e){console.error(e);alert('Gagal membuat PDF: '+e.message);}};}
-  if(jenis==='rekap'){
-    gv(function(mon){
-      gv(safe(function(kel){buildRekapPdf(mon||{},kel||[]);}),'getKelengkapanData');
-    },'getMonitoringData');
-  }else{
-    gv(safe(function(rows){buildModulePdf(jenis,Array.isArray(rows)?rows:[]);}),'getData',jenis);
-  }
+  safe(function(){
+    if(tab==='semua'){
+      var modulRows={};
+      LAP_MODUL.forEach(function(m){modulRows[m]=filterModul(m,lapData[m],t,b);});
+      buildSemuaPdf(modulRows,lapData.mon||{},lapData.kel||[],t,b);
+    }else{
+      var rows=filterModul(tab,lapData[tab],t,b);
+      var doc=buildModuleDoc(tab,rows,t,b);
+      pdfFinalize(doc,PDF_JUDUL[tab],'Periode: '+periodeLabel(t,b)+' | Jumlah data: '+rows.length,pdfFileName(tab,periodeSlug(t,b)));
+    }
+  })();
 }
 function generateBarcode(){
   var v=document.getElementById('barcodeInput').value.trim();
