@@ -1146,6 +1146,8 @@ var lapData={};
 var LAP_MODUL=['pasien','anc','persalinan','nifas','bayi','kb'];
 var LAP_LABEL={pasien:'Pasien',anc:'ANC',persalinan:'Persalinan',nifas:'Nifas',bayi:'Bayi',kb:'KB'};
 function initLaporan(){
+  lapState.tab='semua';
+  lapData={};
   var tabs=document.querySelectorAll('#lapTabs .lap-tab');
   tabs.forEach(function(btn){
     btn.addEventListener('click',function(){
@@ -1210,13 +1212,15 @@ function runExport(){
   if(lapState.fmt==='xlsx'){
     if(!lapData.ready){alert('Data belum selesai dimuat, tunggu sebentar.');return;}
     var t=lapState.tahun,b=lapState.bulan,tab=lapState.tab||'semua';
-    if(tab==='semua'){
-      var modulRows={};
-      LAP_MODUL.forEach(function(m){modulRows[m]=filterModul(m,lapData[m],t,b);});
-      exportExcelFiltered(modulRows,t,b,tab);
-    }else{
-      exportExcelFiltered(filterModul(tab,lapData[tab],t,b),t,b,tab);
-    }
+    try{
+      if(tab==='semua'){
+        var modulRows={};
+        LAP_MODUL.forEach(function(m){modulRows[m]=filterModul(m,lapData[m],t,b);});
+        exportExcelFiltered(modulRows,t,b,tab);
+      }else{
+        exportExcelFiltered(filterModul(tab,lapData[tab],t,b),t,b,tab);
+      }
+    }catch(e){console.error(e);alert('Gagal membuat Excel: '+e.message);}
     return;
   }
   exportPDF();
