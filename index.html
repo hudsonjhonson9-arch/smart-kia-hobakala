@@ -1072,13 +1072,6 @@ function loadReportSummary(){
       '</div>';}else{el.innerHTML='Data tidak tersedia';}
   },'getDashboard');
 }
-function exportExcel(){
-  var mod=prompt('Export modul apa? (pasien/anc/persalinan/nifas/bayi/kb)','pasien');
-  if(!mod)return;
-  gv(function(r){
-    if(r&&r.url){window.open(r.url,'_blank');}else{alert('Gagal export');}
-  },'exportToExcel',mod);
-}
 function klMark(on){return on?'<span style="color:#059669;font-weight:700;">&#x2714;</span>':'<span style="color:#dc2626;font-weight:700;">&#x2718;</span>';}
 function klCell(p,m){
   var on=!!p[m],manual=!!(p.manual&&p.manual[m]);
@@ -1215,8 +1208,15 @@ function lapRefreshPreview(){
 function runExport(){
   lapReadFilters();
   if(lapState.fmt==='xlsx'){
-    // TODO(Task 5): implement window.exportExcelFiltered(filtered, tahun, bulan, tab) and call it here
-    alert('Export Excel belum tersedia. Silakan pilih format PDF.');
+    if(!lapData.ready){alert('Data belum selesai dimuat, tunggu sebentar.');return;}
+    var t=lapState.tahun,b=lapState.bulan,tab=lapState.tab||'semua';
+    if(tab==='semua'){
+      var modulRows={};
+      LAP_MODUL.forEach(function(m){modulRows[m]=filterModul(m,lapData[m],t,b);});
+      exportExcelFiltered(modulRows,t,b,tab);
+    }else{
+      exportExcelFiltered(filterModul(tab,lapData[tab],t,b),t,b,tab);
+    }
     return;
   }
   exportPDF();
@@ -1424,6 +1424,40 @@ function exportPDF(){
       pdfFinalize(doc,PDF_JUDUL[tab],'Periode: '+periodeLabel(t,b)+' | Jumlah data: '+rows.length,pdfFileName(tab,periodeSlug(t,b)));
     }
   })();
+}
+function xlsVal(v){
+  if(v instanceof Date&&!isNaN(v))return pdf2(v.getDate())+'/'+pdf2(v.getMonth()+1)+'/'+v.getFullYear();
+  return v===null||v===undefined?'':v;
+}
+function exportExcelFiltered(filtered,tahun,bulan,tab){
+  if(typeof XLSX==='undefined'){alert('Library Excel (SheetJS) belum termuat. Periksa koneksi internet lalu muat ulang halaman.');return;}
+  var wb=XLSX.utils.book_new();
+  function sheetFor(modul,rows){
+    var name=modul.charAt(0).toUpperCase()+modul.slice(1);
+    var aoa;
+    if(rows&&rows.length){
+      var keys=Object.keys(rows[0]).filter(function(k){return k!=='ID';});
+      aoa=[keys].concat(rows.map(function(r){return keys.map(function(k){return xlsVal(r[k]);});}));
+    }else{
+      var src=(lapData[modul]||[])[0];
+      aoa=src?[Object.keys(src).filter(function(k){return k!=='ID';})]:[['Belum ada data untuk dilaporkan.']];
+    }
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),name);
+  }
+  if(tab==='semua'){
+    var rekap=[['SMART KIA'],['Periode',periodeLabel(tahun,bulan)],[],
+      ['Modul','Jumlah']];
+    LAP_MODUL.forEach(function(m){rekap.push([LAP_LABEL[m]||m,(filtered[m]||[]).length]);});
+    rekap.push([],['Kelengkapan Register'],['No','No RM','Nama','ANC','Persalinan','Nifas','Bayi','KB']);
+    (lapData.kel||[]).forEach(function(p,i){
+      rekap.push([i+1,p.noRM||'-',p.nama||'-',p.anc?'Ada':'Belum',p.persalinan?'Ada':'Belum',p.nifas?'Ada':'Belum',p.bayi?'Ada':'Belum',p.kb?'Ada':'Belum']);
+    });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rekap),'Rekap');
+    LAP_MODUL.forEach(function(m){sheetFor(m,filtered[m]||[]);});
+  }else{
+    sheetFor(tab,filtered||[]);
+  }
+  XLSX.writeFile(wb,'Laporan_KIA_'+tab+'_'+periodeSlug(tahun,bulan)+'.xlsx');
 }
 function generateBarcode(){
   var v=document.getElementById('barcodeInput').value.trim();
