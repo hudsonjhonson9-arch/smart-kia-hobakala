@@ -1088,12 +1088,18 @@ var MODUL_TANGGAL={pasien:'Tanggal',anc:'Tanggal Kunjungan',persalinan:'Tanggal 
 function parseKiaDate(v){
   if(v===null||v===undefined||v==='')return null;
   if(v instanceof Date)return isNaN(v)?null:v;
-  if(typeof v==='number')return new Date(v);
+  if(typeof v==='number'){
+    var dn=new Date(v);
+    return isNaN(dn)?null:dn;
+  }
   var s=String(v).trim();
   var m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
   if(m)return new Date(+m[3],+m[2]-1,+m[1]);
-  var d=new Date(s);
-  return isNaN(d)?null:d;
+  if(/^\d{4}-\d{2}-\d{2}/.test(s)){
+    var d=new Date(s);
+    return isNaN(d)?null:d;
+  }
+  return null;
 }
 function rowPeriod(r,modul){
   var col=MODUL_TANGGAL[modul]||'';
