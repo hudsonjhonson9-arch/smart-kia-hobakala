@@ -133,6 +133,8 @@
     .utility-card{border:1px solid #f1e0e6;border-radius:14px;padding:16px;background:#fff;}
     .utility-card h3{font-size:14px;color:#9d174d;margin-bottom:6px;}
     .utility-card p{font-size:12px;color:#64748b;line-height:1.5;}
+    .lap-tab{padding:10px 16px;border:1.5px solid #f9a8d4;border-radius:999px;background:#fff;color:#9d174d;font-size:13px;font-weight:600;cursor:pointer;min-height:44px;}
+    .lap-tab.active{background:#be185d;color:#fff;}
     @media(max-width:1100px){.cards{grid-template-columns:repeat(2,1fr);}.content-grid{grid-template-columns:1fr;}.monitoring-cards{grid-template-columns:repeat(2,1fr);}}
     @media(max-width:750px){.sidebar{width:64px;}.logo h2,.logo p,.menu-item span{display:none;}.main{margin-left:64px;width:calc(100% - 64px);}.cards{grid-template-columns:1fr;}.search{width:200px;}.monitoring-cards,.utility-grid{grid-template-columns:1fr;}}
     @media(max-width:600px){.module-form{grid-template-columns:1fr 1fr;}}
@@ -752,28 +754,45 @@ function openUtility(type){
       <div class="utility-card"><h3>&#x1F50D; Pencarian Data</h3><p>Cari data berdasarkan No RM atau Nama</p><br><button class="btn btn-primary" onclick="doSearch()">Cari</button></div>
     </div>`;
   } else if(type==='laporan'){
-    el.innerHTML=`<div class="topbar"><div style="font-size:20px;color:#9d174d;font-weight:600;">&#x1F4CB; Laporan & Cetak</div></div>
+    var yNow=new Date().getFullYear(),tyOpts='',blOpts='<option value="0">Semua Bulan</option>';
+    for(var yy=yNow+1;yy>=yNow-4;yy--){tyOpts+='<option value="'+yy+'"'+(yy===yNow?' selected':'')+'>'+yy+'</option>';}
+    for(var mm=1;mm<=12;mm++){blOpts+='<option value="'+mm+'">'+PDF_BULAN[mm-1]+'</option>';}
+    el.innerHTML=`<div class="topbar"><div style="font-size:20px;color:#9d174d;font-weight:600;display:flex;align-items:center;gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9d174d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>Laporan & Cetak</div></div>
     <div class="module-view">
-      <h2 style="margin-bottom:16px;">&#x1F4CB; Laporan Data KIA</h2>
-      <div style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-        <select id="pdfJenis" style="padding:9px 12px;border:1px solid #f9a8d4;border-radius:8px;font-size:13px;background:#fff;">
-          <option value="rekap">Rekapitulasi (ringkasan, statistik bulanan, kelengkapan)</option>
-          <option value="pasien">Data Pasien</option>
-          <option value="anc">Data ANC</option>
-          <option value="persalinan">Data Persalinan</option>
-          <option value="nifas">Data Nifas</option>
-          <option value="bayi">Data Bayi</option>
-          <option value="kb">Data KB</option>
-        </select>
-        <button class="btn btn-danger" onclick="exportPDF()">&#x1F4C4; Unduh PDF (Landscape)</button>
-        <button class="btn btn-success" onclick="exportExcel()">&#x1F4CA; Export Excel</button>
+      <h2 style="margin-bottom:16px;">Laporan Data KIA</h2>
+      <div id="lapTabs" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+        <button type="button" class="lap-tab active" data-tab="semua">Semua</button>
+        <button type="button" class="lap-tab" data-tab="pasien">Pasien</button>
+        <button type="button" class="lap-tab" data-tab="anc">ANC</button>
+        <button type="button" class="lap-tab" data-tab="persalinan">Persalinan</button>
+        <button type="button" class="lap-tab" data-tab="nifas">Nifas</button>
+        <button type="button" class="lap-tab" data-tab="bayi">Bayi</button>
+        <button type="button" class="lap-tab" data-tab="kb">KB</button>
       </div>
-      <div style="padding:14px;background:#fdf2f8;border-radius:10px;font-size:13px;">
-        <b>Ringkasan Laporan:</b>
-        <div id="reportSummary" style="margin-top:8px;">Memuat laporan...</div>
+      <div style="background:#fdf2f8;border:1.5px solid #f9a8d4;border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+          <label style="font-size:12px;font-weight:600;color:#9d174d;display:flex;flex-direction:column;gap:6px;">Tahun
+            <select id="lapTahun" style="min-height:44px;padding:9px 12px;border:1.5px solid #f9a8d4;border-radius:8px;font-size:13px;background:#fff;">${tyOpts}</select>
+          </label>
+          <label style="font-size:12px;font-weight:600;color:#9d174d;display:flex;flex-direction:column;gap:6px;">Bulan
+            <select id="lapBulan" style="min-height:44px;padding:9px 12px;border:1.5px solid #f9a8d4;border-radius:8px;font-size:13px;background:#fff;">${blOpts}</select>
+          </label>
+          <fieldset style="border:0;padding:0;margin:0;">
+            <legend style="font-size:12px;font-weight:600;color:#9d174d;margin-bottom:6px;">Format</legend>
+            <div style="display:flex;gap:14px;align-items:center;min-height:44px;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#9d174d;"><input type="radio" name="lapFmt" id="lapFmtPdf" value="pdf" checked> PDF</label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#9d174d;"><input type="radio" name="lapFmt" id="lapFmtXls" value="xlsx"> Excel</label>
+            </div>
+          </fieldset>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+          <button type="button" id="lapExportBtn" class="btn btn-danger" style="min-height:44px;" onclick="runExport()">Tampilkan Laporan</button>
+          <button type="button" id="lapResetBtn" class="btn btn-light" style="min-height:44px;">Reset</button>
+        </div>
       </div>
+      <div id="lapPreview" style="padding:14px;background:#fdf2f8;border-radius:10px;font-size:13px;min-height:56px;">Memuat data...</div>
     </div>`;
-    loadReportSummary();
+    initLaporan();
   } else if(type==='grafik'){
     el.innerHTML=`<div class="topbar"><div style="font-size:20px;color:#9d174d;font-weight:600;">&#x1F4CA; Grafik Bulanan</div></div>
     <div class="content-grid">
@@ -1127,6 +1146,80 @@ function periodeLabel(tahun,bulan){
 function periodeSlug(tahun,bulan){
   if(!bulan||bulan<1)return (tahun||'all')+'-all';
   return tahun+'-'+pdf2(bulan);
+}
+/* ===== Laporan UI: state, tabs, filter, preview, export ===== */
+var lapState={tab:'semua',tahun:0,bulan:0,fmt:'pdf'};
+var lapData={};
+var LAP_MODUL=['pasien','anc','persalinan','nifas','bayi','kb'];
+var LAP_LABEL={pasien:'Pasien',anc:'ANC',persalinan:'Persalinan',nifas:'Nifas',bayi:'Bayi',kb:'KB'};
+function initLaporan(){
+  var tabs=document.querySelectorAll('#lapTabs .lap-tab');
+  tabs.forEach(function(btn){
+    btn.addEventListener('click',function(){
+      tabs.forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      lapState.tab=btn.getAttribute('data-tab');
+      lapRefreshPreview();
+    });
+  });
+  var ty=document.getElementById('lapTahun'),bl=document.getElementById('lapBulan');
+  if(ty)ty.addEventListener('change',function(){lapReadFilters();lapRefreshPreview();});
+  if(bl)bl.addEventListener('change',function(){lapReadFilters();lapRefreshPreview();});
+  document.querySelectorAll('input[name="lapFmt"]').forEach(function(r){r.addEventListener('change',lapReadFilters);});
+  var reset=document.getElementById('lapResetBtn');
+  if(reset)reset.addEventListener('click',function(){
+    var t=document.getElementById('lapTahun'),b=document.getElementById('lapBulan'),f=document.getElementById('lapFmtPdf');
+    if(t)t.value=String(new Date().getFullYear());
+    if(b)b.value='0';
+    if(f)f.checked=true;
+    lapState.tab='semua';
+    document.querySelectorAll('#lapTabs .lap-tab').forEach(function(x){x.classList.toggle('active',x.getAttribute('data-tab')==='semua');});
+    lapReadFilters();
+    lapRefreshPreview();
+  });
+  lapReadFilters();
+  lapLoadAll();
+}
+function lapLoadAll(){
+  var pending=LAP_MODUL.length+2;
+  function done(){pending--;if(pending<=0){lapData.ready=true;lapRefreshPreview();}}
+  LAP_MODUL.forEach(function(m){
+    gv(function(rows){lapData[m]=Array.isArray(rows)?rows:[];done();},'getData',m);
+  });
+  gv(function(r){lapData.mon=r||{};done();},'getMonitoringData');
+  gv(function(r){lapData.kel=Array.isArray(r)?r:[];done();},'getKelengkapanData');
+}
+function lapReadFilters(){
+  var ty=document.getElementById('lapTahun'),bl=document.getElementById('lapBulan');
+  var f=document.querySelector('input[name="lapFmt"]:checked');
+  lapState.tahun=ty?parseInt(ty.value,10)||0:0;
+  lapState.bulan=bl?parseInt(bl.value,10)||0:0;
+  lapState.fmt=f?f.value:'pdf';
+}
+function lapRefreshPreview(){
+  var el=document.getElementById('lapPreview');
+  if(!el)return;
+  if(!lapData.ready){el.textContent='Memuat data...';return;}
+  var t=lapState.tahun,b=lapState.bulan;
+  var mods=lapState.tab==='semua'?LAP_MODUL:[lapState.tab];
+  var html='<b style="color:#be185d;">Periode: '+periodeLabel(t,b)+'</b>';
+  var total=0;
+  mods.forEach(function(m){
+    var n=filterModul(m,lapData[m],t,b).length;
+    total+=n;
+    html+='<div style="margin-top:4px;">'+(LAP_LABEL[m]||m)+': <b>'+n+'</b> baris</div>';
+  });
+  html+='<div style="margin-top:6px;padding-top:6px;border-top:1px solid #f9a8d4;">Total: <b>'+total+'</b> baris</div>';
+  el.innerHTML=html;
+}
+function runExport(){
+  lapReadFilters();
+  if(lapState.fmt==='xlsx'){
+    // TODO(Task 5): implement window.exportExcelFiltered(filtered, tahun, bulan, tab) and call it here
+    alert('Export Excel belum tersedia. Silakan pilih format PDF.');
+    return;
+  }
+  exportPDF();
 }
 function pdfFmtVal(key,v){
   if(v===null||v===undefined||v==='')return '-';
