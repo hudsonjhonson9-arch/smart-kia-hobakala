@@ -512,11 +512,11 @@ function renderDashboard(d){
   <div class="hero">&#x1F469;&#x200D;&#x1F37C;</div>
 </div>
 <div class="cards">
-  <div class="card"><div class="card-top"><div><div class="card-title">Total Kunjungan</div><div class="card-number">${d.totalPasien||0}</div><div class="label">Bulan ini</div></div><div class="card-icon pink">&#x265F;</div></div></div>
+  <div class="card"><div class="card-top"><div><div class="card-title">Total Kunjungan</div><div class="card-number">${d.bulanIniKunjungan||0}</div><div class="label">Bulan ini</div></div><div class="card-icon pink">&#x265F;</div></div></div>
   <div class="card"><div class="card-top"><div><div class="card-title">Total Kunjungan</div><div class="card-number">${d.totalKunjungan||0}</div><div class="label">Total</div></div><div class="card-icon green">&#x2665;</div></div></div>
-  <div class="card"><div class="card-top"><div><div class="card-title">Data Ibu</div><div class="card-number">${d.totalIbu||0}</div><div class="label">Bulan ini</div></div><div class="card-icon blue">&#x1F469;</div></div></div>
-  <div class="card"><div class="card-top"><div><div class="card-title">Data Bayi</div><div class="card-number">${d.totalBayi||0}</div><div class="label">Bulan ini</div></div><div class="card-icon orange">&#x1F476;</div></div></div>
-  <div class="card"><div class="card-top"><div><div class="card-title">Pasien Aktif</div><div class="card-number">${d.pasienAktif||0}</div><div class="label">Bulan ini</div></div><div class="card-icon purple">&#x25CF;</div></div></div>
+  <div class="card"><div class="card-top"><div><div class="card-title">Data Ibu</div><div class="card-number">${d.bulanIniIbu||0}</div><div class="label">Bulan ini</div></div><div class="card-icon blue">&#x1F469;</div></div></div>
+  <div class="card"><div class="card-top"><div><div class="card-title">Data Bayi</div><div class="card-number">${d.bulanIniBayi||0}</div><div class="label">Bulan ini</div></div><div class="card-icon orange">&#x1F476;</div></div></div>
+  <div class="card"><div class="card-top"><div><div class="card-title">Pasien Aktif</div><div class="card-number">${d.bulanIniAktif||0}</div><div class="label">Bulan ini</div></div><div class="card-icon purple">&#x25CF;</div></div></div>
   <div class="card"><div class="card-top"><div><div class="card-title">KB</div><div class="card-number">${d.totalKB||0}</div><div class="label">Peserta aktif</div></div><div class="card-icon rose">&#x25CF;</div></div></div>
 </div>
 <div class="content-grid">

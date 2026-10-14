@@ -144,6 +144,25 @@ function setupSheets_() {
 
 // ===== HELPERS =====
 
+// ponytail: month attribution = tanggal kunjungan, fallback Waktu Input.
+// Mirrors parseKiaDate/MODUL_TANGGAL in index.html.
+const MODUL_TANGGAL = {pasien:'Tanggal',anc:'Tanggal Kunjungan',persalinan:'Tanggal Persalinan',nifas:'Tanggal Kunjungan Nifas',bayi:'Tanggal Lahir',kb:'Tanggal Pelayanan'};
+
+function parseKiaDate_(v) {
+  if (v === null || v === undefined || v === '') return null;
+  if (v instanceof Date) return isNaN(v) ? null : v;
+  if (typeof v === 'number') { const dn = new Date(v); return isNaN(dn) ? null : dn; }
+  const s = String(v).trim();
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+  if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) { const d = new Date(s); return isNaN(d) ? null : d; }
+  return null;
+}
+
+function moduleDate_(row, modul) {
+  return parseKiaDate_(row[MODUL_TANGGAL[modul] || '']) || parseKiaDate_(row['Waktu Input']);
+}
+
 function getUserDisplayName_(username) {
   if (!username) return 'User';
   try {
@@ -285,26 +304,29 @@ function getDashboard() {
   const monthlyIbu = Array(12).fill(0);
   const monthlyBayi = Array(12).fill(0);
 
-  rows('anc').forEach(r => {
-    const d = new Date(r['Tanggal Kunjungan'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
-  });
-  rows('persalinan').forEach(r => {
-    const d = new Date(r['Tanggal Persalinan'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
-  });
-  rows('nifas').forEach(r => {
-    const d = new Date(r['Tanggal Kunjungan Nifas'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
-  });
-  rows('kb').forEach(r => {
-    const d = new Date(r['Tanggal Pelayanan'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+  ['anc','persalinan','nifas','kb'].forEach(m => {
+    rows(m).forEach(r => {
+      const d = moduleDate_(r, m);
+      if (d && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+    });
   });
   rows('bayi').forEach(r => {
-    const d = new Date(r['Tanggal Lahir'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyBayi[d.getMonth()]++;
+    const d = moduleDate_(r, 'bayi');
+    if (d && d.getFullYear() === thisYear) monthlyBayi[d.getMonth()]++;
   });
+
+  // ponytail: kartu "Bulan ini" = bulan berjalan menurut tanggal kunjungan
+  const thisMonth = now.getMonth();
+  const bulanIniKunjungan = monthlyIbu[thisMonth];
+  const bulanIniBayi = monthlyBayi[thisMonth];
+  let bulanIniIbu = 0;
+  pasienRows.forEach(r => { const d = moduleDate_(r, 'pasien'); if (d && d.getFullYear() === thisYear && d.getMonth() === thisMonth) bulanIniIbu++; });
+  const aktifRM = {};
+  ['anc','persalinan','nifas','kb'].forEach(m => rows(m).forEach(r => {
+    const d = moduleDate_(r, m);
+    if (d && d.getFullYear() === thisYear && d.getMonth() === thisMonth) { const rm = String(r['No RM'] || '').trim(); if (rm) aktifRM[rm] = 1; }
+  }));
+  const bulanIniAktif = Object.keys(aktifRM).length;
 
   return {
     totalPasien: totalPasien,
@@ -326,10 +348,13 @@ function getDashboard() {
     monthlyIbu: monthlyIbu,
     monthlyBayi: monthlyBayi,
     pieLabels: ['ANC','Persalinan','Nifas','Bayi','KB'],
-    pieData: [totalANC, totalPersalinan, totalNifas, totalBayi, totalKB_]
+    pieData: [totalANC, totalPersalinan, totalNifas, totalBayi, totalKB_],
+    bulanIniKunjungan: bulanIniKunjungan,
+    bulanIniBayi: bulanIniBayi,
+    bulanIniIbu: bulanIniIbu,
+    bulanIniAktif: bulanIniAktif
   };
 }
-
 function searchPatient(query) {
   query = String(query || '').trim().toLowerCase();
   if (!query) return [];
@@ -383,26 +408,29 @@ function getFullDashboard() {
   const monthlyIbu = Array(12).fill(0);
   const monthlyBayi = Array(12).fill(0);
 
-  rows('anc').forEach(r => {
-    const d = new Date(r['Tanggal Kunjungan'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
-  });
-  persalinanRows.forEach(r => {
-    const d = new Date(r['Tanggal Persalinan'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
-  });
-  nifasRows.forEach(r => {
-    const d = new Date(r['Tanggal Kunjungan Nifas'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
-  });
-  kbRows.forEach(r => {
-    const d = new Date(r['Tanggal Pelayanan'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+  [['anc',ancRows],['persalinan',persalinanRows],['nifas',nifasRows],['kb',kbRows]].forEach(([m,rs]) => {
+    rs.forEach(r => {
+      const d = moduleDate_(r, m);
+      if (d && d.getFullYear() === thisYear) monthlyIbu[d.getMonth()]++;
+    });
   });
   bayiRows.forEach(r => {
-    const d = new Date(r['Tanggal Lahir'] || r['Waktu Input']);
-    if (!isNaN(d) && d.getFullYear() === thisYear) monthlyBayi[d.getMonth()]++;
+    const d = moduleDate_(r, 'bayi');
+    if (d && d.getFullYear() === thisYear) monthlyBayi[d.getMonth()]++;
   });
+
+  // ponytail: kartu "Bulan ini" = bulan berjalan menurut tanggal kunjungan
+  const thisMonth = now.getMonth();
+  const bulanIniKunjungan = monthlyIbu[thisMonth];
+  const bulanIniBayi = monthlyBayi[thisMonth];
+  let bulanIniIbu = 0;
+  pasienRows.forEach(r => { const d = moduleDate_(r, 'pasien'); if (d && d.getFullYear() === thisYear && d.getMonth() === thisMonth) bulanIniIbu++; });
+  const aktifRM = {};
+  ['anc','persalinan','nifas','kb'].forEach(m => rows(m).forEach(r => {
+    const d = moduleDate_(r, m);
+    if (d && d.getFullYear() === thisYear && d.getMonth() === thisMonth) { const rm = String(r['No RM'] || '').trim(); if (rm) aktifRM[rm] = 1; }
+  }));
+  const bulanIniAktif = Object.keys(aktifRM).length;
 
   // kelengkapan
   const kelengkapan = pasienRows.map(p => {
@@ -439,7 +467,11 @@ function getFullDashboard() {
     monthlyBayi: monthlyBayi,
     pieLabels: ['ANC','Persalinan','Nifas','Bayi','KB'],
     pieData: [totalANC, totalPersalinan, totalNifas, totalBayi, totalKB_],
-    kelengkapan: kelengkapan
+    kelengkapan: kelengkapan,
+    bulanIniKunjungan: bulanIniKunjungan,
+    bulanIniBayi: bulanIniBayi,
+    bulanIniIbu: bulanIniIbu,
+    bulanIniAktif: bulanIniAktif
   };
 }
 
@@ -486,8 +518,8 @@ function getMonthlyStats() {
   modules.forEach(m => {
     const counts = Array(12).fill(0);
     rows(m).forEach(r => {
-      const d = new Date(r['Waktu Input']);
-      if (!isNaN(d) && d.getFullYear() === thisYear) counts[d.getMonth()]++;
+      const d = moduleDate_(r, m);
+      if (d && d.getFullYear() === thisYear) counts[d.getMonth()]++;
     });
     result[m] = counts;
   });
