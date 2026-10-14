@@ -163,6 +163,25 @@ function moduleDate_(row, modul) {
   return parseKiaDate_(row[MODUL_TANGGAL[modul] || '']) || parseKiaDate_(row['Waktu Input']);
 }
 
+// ponytail: No RM sering kosong/"-" (placeholder), jadi ceklist kelengkapan dicocokkan by-Nama sebagai fallback.
+function normNama_(v) {
+  return String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+function isRMValid_(v) {
+  const s = String(v || '').trim();
+  return s !== '' && s !== '-' && s !== '\u2013' && s !== '\u2014';
+}
+function pasienPunya_(pasienRow, moduleRows) {
+  const prm = String(pasienRow['No RM'] || '').trim();
+  const prn = normNama_(pasienRow['Nama Ibu']);
+  return moduleRows.some(m => {
+    const mrm = String(m['No RM'] || '').trim();
+    if (isRMValid_(prm) && isRMValid_(mrm) && prm === mrm) return true;
+    const mnm = normNama_(m['Nama Ibu']);
+    return prn !== '' && mnm !== '' && prn === mnm;
+  });
+}
+
 function getUserDisplayName_(username) {
   if (!username) return 'User';
   try {
@@ -434,15 +453,14 @@ function getFullDashboard() {
 
   // kelengkapan
   const kelengkapan = pasienRows.map(p => {
-    const noRM = String(p['No RM']||'').trim();
     return {
-      noRM: noRM,
+      noRM: String(p['No RM']||'').trim(),
       nama: p['Nama Ibu']||'',
-      anc: ancRows.some(a => String(a['No RM']||'').trim() === noRM),
-      persalinan: persalinanRows.some(a => String(a['No RM']||'').trim() === noRM),
-      nifas: nifasRows.some(a => String(a['No RM']||'').trim() === noRM),
-      bayi: bayiRows.some(a => String(a['No RM']||'').trim() === noRM),
-      kb: kbRows.some(a => String(a['No RM']||'').trim() === noRM)
+      anc: pasienPunya_(p, ancRows),
+      persalinan: pasienPunya_(p, persalinanRows),
+      nifas: pasienPunya_(p, nifasRows),
+      bayi: pasienPunya_(p, bayiRows),
+      kb: pasienPunya_(p, kbRows)
     };
   });
 
@@ -493,15 +511,14 @@ function getKelengkapanData() {
   const bayiRows = rows('bayi');
   const kbRows = rows('kb');
   return pasienRows.map(p => {
-    const noRM = String(p['No RM']||'').trim();
     return {
-      noRM: noRM,
+      noRM: String(p['No RM']||'').trim(),
       nama: p['Nama Ibu']||'',
-      anc: ancRows.some(a => String(a['No RM']||'').trim() === noRM),
-      persalinan: persalinanRows.some(a => String(a['No RM']||'').trim() === noRM),
-      nifas: nifasRows.some(a => String(a['No RM']||'').trim() === noRM),
-      bayi: bayiRows.some(a => String(a['No RM']||'').trim() === noRM),
-      kb: kbRows.some(a => String(a['No RM']||'').trim() === noRM)
+      anc: pasienPunya_(p, ancRows),
+      persalinan: pasienPunya_(p, persalinanRows),
+      nifas: pasienPunya_(p, nifasRows),
+      bayi: pasienPunya_(p, bayiRows),
+      kb: pasienPunya_(p, kbRows)
     };
   });
 }
@@ -651,10 +668,8 @@ function getMonitoringData() {
   let dataBelumLengkap = 0;
 
   pasienRows.forEach(p => {
-    const noRM = String(p['No RM']||'').trim();
-    if (!noRM) return;
-    const hasANC = ancRows.some(a => String(a['No RM']||'').trim() === noRM);
-    const hasPersalinan = persalinanRows.some(a => String(a['No RM']||'').trim() === noRM);
+    const hasANC = pasienPunya_(p, ancRows);
+    const hasPersalinan = pasienPunya_(p, persalinanRows);
     if (hasANC && hasPersalinan) dataLengkap++;
     else dataBelumLengkap++;
   });

@@ -116,9 +116,7 @@
     .empty{text-align:center;padding:24px;color:#94a3b8;font-size:13px;}
     .actions-cell{display:flex;gap:4px;}
     .actions-cell button{border:0;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;}
-    .kl-cell{cursor:pointer;text-align:center;position:relative;transition:background .15s;}
-    .kl-cell:hover{background:#fdf2f8;}
-    .kl-manual::after{content:"*";position:absolute;top:2px;right:6px;font-size:11px;color:#be185d;font-weight:700;}
+    .kl-cell{text-align:center;}
     .monitoring-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;}
     .mon-card{border-radius:14px;padding:18px;color:#fff;}
     .mon-card.pink{background:linear-gradient(135deg,#ec4899,#f472b6);}
@@ -1073,24 +1071,7 @@ function loadReportSummary(){
   },'getDashboard');
 }
 function klMark(on){return on?'<span style="color:#059669;font-weight:700;">&#x2714;</span>':'<span style="color:#dc2626;font-weight:700;">&#x2718;</span>';}
-function klCell(p,m){
-  var on=!!p[m],manual=!!(p.manual&&p.manual[m]);
-  return '<td class="kl-cell'+(manual?' kl-manual':'')+'" data-id="'+(p.id||'')+'" data-m="'+m+'" data-v="'+(on?1:0)+'" data-nama="'+String(p.nama||'').replace(/"/g,'&quot;')+'" title="Klik untuk mengubah ceklist'+(manual?' (diatur manual)':'')+'" onclick="toggleKelengkapan(this)">'+klMark(on)+'</td>';
-}
-function toggleKelengkapan(td){
-  var id=td.getAttribute('data-id'),m=td.getAttribute('data-m'),cur=td.getAttribute('data-v')==='1';
-  if(!id){try{localStorage.removeItem('kia_dash_cache');}catch(e){}alert('Data dashboard belum diperbarui. Muat ulang halaman lalu coba lagi.');return;}
-  var label={anc:'ANC',persalinan:'Persalinan',nifas:'Nifas',bayi:'Bayi',kb:'KB'}[m];
-  if(!confirm((cur?'Hapus':'Beri')+' ceklist '+label+' untuk '+td.getAttribute('data-nama')+'?'))return;
-  gv(function(r){
-    if(r&&r.ok){
-      td.setAttribute('data-v',r.value?'1':'0');
-      td.innerHTML=klMark(r.value);
-      td.classList.toggle('kl-manual',!!r.manual);
-      try{localStorage.removeItem('kia_dash_cache');}catch(e){}
-    }else{alert((r&&r.message)||'Gagal mengubah ceklist');}
-  },'setKelengkapan',id,m,!cur,currentUser);
-}
+function klCell(p,m){return '<td class="kl-cell">'+klMark(!!p[m])+'</td>';}
 
 /* ===== PDF langsung unduh (tanpa pop up, otomatis landscape) ===== */
 var PDF_JUDUL={rekap:'Rekapitulasi Laporan KIA & KB',pasien:'Laporan Data Pasien',anc:'Laporan Data ANC',persalinan:'Laporan Data Persalinan',nifas:'Laporan Data Nifas',bayi:'Laporan Data Bayi',kb:'Laporan Data KB'};
