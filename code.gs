@@ -93,14 +93,19 @@ function doGet(e) {
   }
 }
 
+let __ssCache = null;
 function getSS_() {
-  if (SPREADSHEET_ID) return SpreadsheetApp.openById(SPREADSHEET_ID);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (!ss) throw new Error('Spreadsheet tidak ditemukan.');
-  return ss;
+  if (__ssCache) return __ssCache;
+  if (SPREADSHEET_ID) __ssCache = SpreadsheetApp.openById(SPREADSHEET_ID);
+  else __ssCache = SpreadsheetApp.getActiveSpreadsheet();
+  if (!__ssCache) throw new Error('Spreadsheet tidak ditemukan.');
+  return __ssCache;
 }
 
+let __setupDone = false;
 function setupSheets_() {
+  if (__setupDone) return;
+  __setupDone = true;
   const ss = getSS_();
   Object.keys(SHEETS).forEach(name => {
     let sh = ss.getSheetByName(name);
