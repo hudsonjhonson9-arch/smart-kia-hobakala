@@ -446,7 +446,7 @@ MODULES = {
 var GAS_URL='https://script.google.com/macros/s/AKfycbyw3j8G2L3-pPiADx8RbKjI78w3Q1uJrknM2ZKw6ACBnkgR0ZhfFX60OZCfCTVv37KVQQ/exec';
 
 function showView(v){currentView=v;try{localStorage.setItem('kia_page',v);}catch(e){}}
-function gv(fn,action){var args=[];for(var i=2;i<arguments.length;i++)args.push(arguments[i]);showLoading();var url=GAS_URL+'?action='+encodeURIComponent(action);args.forEach(function(a,i){url+='&a'+i+'='+encodeURIComponent(typeof a==='string'?a:JSON.stringify(a));});fetch(url).then(function(r){return r.json();}).then(function(r){hideLoading();try{fn(r);}catch(e){console.error(e);}}).catch(function(e){hideLoading();console.error(e);alert('Error: '+e.message);});}
+function gv(fn,action){var args=[];for(var i=2;i<arguments.length;i++)args.push(arguments[i]);showLoading();var url=GAS_URL+'?action='+encodeURIComponent(action);args.forEach(function(a,i){url+='&a'+i+'='+encodeURIComponent(typeof a==='string'?a:JSON.stringify(a));});var tries=0;(function run(){fetch(url).then(function(r){return r.json();}).then(function(r){hideLoading();try{fn(r);}catch(e){console.error(e);}}).catch(function(e){if(++tries<3){setTimeout(run,800*tries);return;}hideLoading();console.error(e);alert('Gagal memuat data. Koneksi lambat, coba lagi.');});})();}
 function showLoading(){document.getElementById('loadingOverlay').classList.add('show');}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show');}
 function qs(action,callback){gv(callback,action);}
@@ -1157,13 +1157,14 @@ function initLaporan(){
   lapLoadAll();
 }
 function lapLoadAll(){
-  var pending=LAP_MODUL.length+2;
-  function done(){pending--;if(pending<=0){lapData.ready=true;lapRefreshPreview();}}
-  LAP_MODUL.forEach(function(m){
-    gv(function(rows){lapData[m]=Array.isArray(rows)?rows:[];done();},'getData',m);
-  });
-  gv(function(r){lapData.mon=r||{};done();},'getMonitoringData');
-  gv(function(r){lapData.kel=Array.isArray(r)?r:[];done();},'getKelengkapanData');
+  // ponytail: Apps Script chokes when hit by 7 requests at once -> run them
+  // one by one. Slower but reliable; batch into one endpoint if it matters.
+  var seq=LAP_MODUL.map(function(m){return function(next){
+    gv(function(rows){lapData[m]=Array.isArray(rows)?rows:[];next();},'getData',m);
+  };});
+  seq.push(function(next){gv(function(r){lapData.mon=r||{};next();},'getMonitoringData');});
+  seq.push(function(next){gv(function(r){lapData.kel=Array.isArray(r)?r:[];next();},'getKelengkapanData');});
+  (function step(i){if(i>=seq.length){lapData.ready=true;lapRefreshPreview();return;}seq[i](function(){step(i+1);});})(0);
 }
 function lapReadFilters(){
   var ty=document.getElementById('lapTahun'),bl=document.getElementById('lapBulan');
